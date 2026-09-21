@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  NEW
+  REVIEWING
+  APPROVED
+  NOT_APPROVED
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  status    Status   @default(NEW)
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Step 1 – Requestor & Item Information ──
+  typeOfRequest          String
+  requestedBy            String
+  requestedByNameTitle   String
+  requesterEmail         String
+  requesterPhone         String
+  requestingDepartment   String
+  isNewProviderService   String
+  productServiceName     String
+  vendorManufacturer     String
+  catalogNumber          String
+  manufacturerRep        String
+  productType            String
+
+  // ── Step 2 – Product Classification ──
+  productClassification  String
+  isMinorEquipment       String
+  capitalEquipmentInfo   String?
+
+  // ── Step 3 – Operational Justification ──
+  purposeOfRequest       String
+  reasonForRequest       String
+  concernsWithExisting   String?
+  currentProcedures      String
+  clinicalOutcome        String
+  measureEffectiveness   String
+  clinicalMetrics        String
+
+  // ── Step 4 – Specific Product & Usage ──
+  governingBody          String?
+  multiDepartmentUsage   String?
+  anticipatedMonthlyUsage String
+  specialHandling        String?
+  trainingRequired       String?
+  usedWithOtherProduct   String?
+
+  // ── Step 5 – Financial Information ──
+  patientChargeable      String
+  revenueHcpcsCode       String?
+  expectedRoi            String
+  costJustification      String
+
+  // ══════════════════════════════════════════
+  // ADMIN / INTERNAL REVIEW (Excel Sections B–E)
+  // ══════════════════════════════════════════
+
+  // Request meta (Supply Chain use)
+  requestNumber          String?
+  assignedEmployee       String?
+  dateReceived           DateTime?
+
+  // ── Section B – Material Management Review ──
+  // CURRENT product
+  currentCatNumber       String?
+  currentLawNumber       String?
+  currentVendor          String?
+  currentContract        String?
+  currentPricing         String?   // price per UOM
+  currentUom             String?
+  currentPkg             String?
+  currentEachPricing     String?
+  currentVolume          String?
+  currentTotalSpend      String?
+
+  // PROPOSED product
+  proposedCatNumber      String?
+  proposedLawNumber      String?
+  proposedVendor         String?
+  proposedContract       String?
+  proposedPricing        String?
+  proposedUom            String?
+  proposedPkg            String?
+  proposedEachPricing    String?
+  proposedVolume         String?
+  proposedTotalSpend     String?
+
+  // Cost summary
+  additionalCosts        String?
+  rebatesIncentives      String?
+  totalCostProposed      String?
+  costSavings            String?   // positive = savings, negative = increase
+
+  // Other considerations
+  deptsUsingExisting     String?
+  mmComments             String?
+
+  // Action taken (Material Mgmt)
+  mmAction               String?   // Implement | Refer to Specialty Team | Contact Requestor | Declined
+  mmActionDate           DateTime?
+  mmSpecialtyTeams       String?   // JSON array or comma list
+  mmTargetDueDate        DateTime?
+  mmDeclineReason        String?
+
+  // ── Section C – VAT Review ──
+  vatReasonForReview     String?
+  vatDeptsUsing          String?
+  vatTotalCostSavings    String?
+  vatAction              String?   // Accepted | Contact requestor | Evaluation/Trial | Education | Denied
+  vatActionDate          DateTime?
+  vatTrialCoordinator    String?
+  vatEducationCoordinator String?
+  vatDenyReason          String?
+  vatNotes               String?
+
+  // ── Section D – Evaluation (optional) ──
+  evalTrialCoordinator   String?
+  evalPhone              String?
+  evalNotes              String?
+  evalAction             String?
+  evalActionDate         DateTime?
+
+  // ── Section E – Material Management setup ──
+  inventoryLocation      String?   // Warehouse | Central Supply | Non-Inventory | Service
+  purchaseUom            String?
+  issueUom               String?
+  majorClass             String?
+  minorClass             String?
+  accountGlCat           String?
+  reorderPoint           String?
+  reorderQty             String?
+  isReplacementProduct   String?   // Yes | No
+  sohTreatment           String?   // Phase-out | Return for Credit | Other
+
+  files File[]
+}
+
+model File {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  field        String     // "quote" | "payorMix"
+  originalName String
+  path         String
+  mimeType     String
+  size         Int
+  createdAt    DateTime   @default(now())
+}

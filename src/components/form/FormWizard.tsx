@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormReturn, type FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useFormStore } from "@/lib/form-store";
@@ -11,7 +11,6 @@ import {
   step3Schema,
   step4Schema,
   step5Schema,
-  type FullFormData,
 } from "@/lib/validations/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +26,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Upload, X, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+
+type StepForm = UseFormReturn<FieldValues>;
 
 const STEPS = [
   { id: 1, title: "Requestor & Item Information", schema: step1Schema },
@@ -59,13 +59,9 @@ export default function FormWizard() {
 
   const form = useForm({
     resolver: zodResolver(currentSchema),
-    defaultValues: data as any,
+    defaultValues: data as FieldValues,
     mode: "onChange",
   });
-
-  // Keep form values in sync when navigating back
-  // (react-hook-form + zustand)
-  const stepData = data;
 
   const onNext = async () => {
     const valid = await form.trigger();
@@ -176,8 +172,8 @@ export default function FormWizard() {
 
       reset();
       router.push("/form/success");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
     }
@@ -366,7 +362,7 @@ function FieldError({ error }: { error?: { message?: string } }) {
   return <p className="text-sm text-destructive mt-1">{error.message}</p>;
 }
 
-function Step1Fields({ form }: { form: any }) {
+function Step1Fields({ form }: { form: StepForm }) {
   const {
     register,
     formState: { errors },
@@ -505,7 +501,7 @@ function Step1Fields({ form }: { form: any }) {
   );
 }
 
-function Step2Fields({ form }: { form: any }) {
+function Step2Fields({ form }: { form: StepForm }) {
   const {
     register,
     formState: { errors },
@@ -562,7 +558,7 @@ function Step2Fields({ form }: { form: any }) {
   );
 }
 
-function Step3Fields({ form }: { form: any }) {
+function Step3Fields({ form }: { form: StepForm }) {
   const {
     register,
     formState: { errors },
@@ -651,7 +647,7 @@ function Step3Fields({ form }: { form: any }) {
   );
 }
 
-function Step4Fields({ form }: { form: any }) {
+function Step4Fields({ form }: { form: StepForm }) {
   const {
     register,
     formState: { errors },
@@ -719,7 +715,7 @@ function Step4Fields({ form }: { form: any }) {
   );
 }
 
-function Step5Fields({ form }: { form: any }) {
+function Step5Fields({ form }: { form: StepForm }) {
   const {
     register,
     formState: { errors },

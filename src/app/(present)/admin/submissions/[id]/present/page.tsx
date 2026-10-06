@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProductRequestPresent } from "@/components/admin/ProductRequestPresent";
+import { ProductRequestPresent, type ProductRequestSubmission } from "@/components/admin/ProductRequestPresent";
 
 export default async function PresentPage({
   params,
@@ -25,5 +25,9 @@ export default async function PresentPage({
     dateReceived: submission.dateReceived?.toISOString() ?? null,
   };
 
-  return <ProductRequestPresent submission={serialized as any} />;
+  return (
+    <ProductRequestPresent
+      submission={serialized as ProductRequestSubmission}
+    />
+  );
 }

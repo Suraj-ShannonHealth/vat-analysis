@@ -1,28 +1,117 @@
-# GitHub Actions workflow for deploying the VAT approval form application
+# Deploy VAT Approval Form to vsauto3 (same server as Locum / Automation-Hub)
+# Requires: self-hosted runner registered on THIS repository
+#
+# GitHub repo secrets (Settings → Secrets and variables → Actions):
+#   ADMIN_PASSWORD   (required) — admin login password
+#   ADMIN_USERNAME   (optional) — defaults to "admin"
+#
 name: Deployment
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vat-approval-form
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: "22"
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "file:./vat_prod.db"
 
       - name: Build application
         run: npm run build
+        env:
+          DATABASE_URL: "file:./vat_prod.db"
 
-      - name: Deploy application
-        run: npm run deploy
+      - name: Deploy to server app directory
+        env:
+          APP_DIR: /home/suraj/projects/vat-analysis
+          ECOSYSTEM: /home/suraj/projects/ecosystem.config.js
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ADMIN_PASSWORD:-}" ]; then
+            echo "ERROR: GitHub secret ADMIN_PASSWORD is not set."
+            echo "Add it under Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+
+          ADMIN_USER="${ADMIN_USERNAME:-admin}"
+
+          echo "==> Target: $APP_DIR"
+          mkdir -p "$APP_DIR/public/files"
+          mkdir -p "$APP_DIR/prisma"
+
+          # Sync built app; never wipe DB, uploads
+          rsync -a --delete \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude '.next/cache' \
+            --exclude 'public/files/**' \
+            --exclude 'prisma/dev.db' \
+            --exclude 'prisma/dev.db-journal' \
+            --exclude 'prisma/vat_prod.db' \
+            --exclude 'prisma/vat_prod.db-journal' \
+            --exclude '.env' \
+            --exclude '.env.local' \
+            --exclude '.env*.local' \
+            ./ "$APP_DIR/"
+
+          # Write/update .env from secrets (password never stored in the workflow file)
+          cat > "$APP_DIR/.env" << ENVEOF
+DATABASE_URL="file:./vat_prod.db"
+ADMIN_USERNAME="${ADMIN_USER}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD}"
+NODE_ENV=production
+PORT=3010
+ENVEOF
+          chmod 600 "$APP_DIR/.env"
+          echo "==> .env updated (DATABASE_URL=vat_prod.db, admin from GitHub secrets)"
+
+          cd "$APP_DIR"
+
+          echo "==> Production install"
+          npm ci --omit=dev --legacy-peer-deps
+
+          echo "==> Prisma generate + db push"
+          npx prisma generate
+          npx prisma db push --skip-generate
+
+          echo "==> PM2 restart"
+          if pm2 describe vat-approval-form >/dev/null 2>&1; then
+            pm2 restart vat-approval-form --update-env
+          else
+            if [ -f "$ECOSYSTEM" ] && grep -q 'vat-approval-form' "$ECOSYSTEM" 2>/dev/null; then
+              pm2 start "$ECOSYSTEM" --only vat-approval-form
+            else
+              echo "==> Starting via npm (add entry to $ECOSYSTEM for permanence)"
+              pm2 start npm --name vat-approval-form --cwd "$APP_DIR" -- start
+            fi
+            pm2 save
+          fi
+
+          pm2 status vat-approval-form || true
+          echo "==> Deploy complete → http://172.16.11.138:3010"

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Submission = {
+export type ProductRequestSubmission = {
   id: string;
   status: string;
   productServiceName: string;
@@ -94,7 +94,7 @@ function Row({
 export function ProductRequestPresent({
   submission: initial,
 }: {
-  submission: Submission;
+  submission: ProductRequestSubmission;
 }) {
   const router = useRouter();
   const [fs, setFs] = useState(false);

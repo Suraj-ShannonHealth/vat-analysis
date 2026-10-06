@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { SubmissionDetailClient } from "@/components/admin/SubmissionDetailClient";
+import { SubmissionDetailClient, type AdminSubmission } from "@/components/admin/SubmissionDetailClient";
 
 export default async function SubmissionDetailPage({
   params,
@@ -30,5 +30,7 @@ export default async function SubmissionDetailPage({
     evalActionDate: submission.evalActionDate?.toISOString() ?? null,
   };
 
-  return <SubmissionDetailClient submission={serialized as any} />;
+  return (
+    <SubmissionDetailClient submission={serialized as AdminSubmission} />
+  );
 }

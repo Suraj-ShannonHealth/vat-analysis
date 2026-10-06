@@ -40,7 +40,7 @@ type FileRecord = {
   size: number;
 };
 
-type Submission = {
+export type AdminSubmission = {
   id: string;
   status: string;
   archived: boolean;
@@ -221,7 +221,7 @@ function EditableField({
   );
 }
 
-export function SubmissionDetailClient({ submission: initial }: { submission: Submission }) {
+export function SubmissionDetailClient({ submission: initial }: { submission: AdminSubmission }) {
   const router = useRouter();
   const [tab, setTab] = useState<TabId>("summary");
   const [form, setForm] = useState<Record<string, string>>(() => {

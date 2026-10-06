@@ -14,6 +14,14 @@ enum Status {
   NOT_APPROVED
 }
 
+enum Recommendation {
+  PENDING
+  APPROVE
+  TRIAL
+  TABLE
+  DENY
+}
+
 model Submission {
   id        String   @id @default(cuid())
   status    Status   @default(NEW)
@@ -40,52 +48,59 @@ model Submission {
   isMinorEquipment       String
   capitalEquipmentInfo   String?
 
-  // ── Step 3 – Operational Justification ──
-  purposeOfRequest       String
-  reasonForRequest       String
-  concernsWithExisting   String?
+  // ── Step 3 – Operational (slimmed) + Product Request fields ──
+  // Kept: current procedures, clinical metrics
   currentProcedures      String
-  clinicalOutcome        String
-  measureEffectiveness   String
   clinicalMetrics        String
 
-  // ── Step 4 – Specific Product & Usage ──
+  // New Product Request data points
+  presenters             String?   // Presenter(s)
+  teamLeads              String?   // Team Lead(s)
+  purpose                String    @default("") // short purpose e.g. Cost savings and unique products
+  procedures             String    @default("") // Which procedures will this be used in
+  usedWith               String?   // Used with (systems/products)
+  departmentsImpacted    String?   // Department(s) beyond requesting
+  providersImpacted      String?   // Provider(s) / doctors impacted
+  reasonsForRequest      String    @default("") // bullet-style reasons
+  proposedAnnualCostImpact String  @default("") // e.g. $9,500 savings or increase
+  annualUsageOld         String?   // Annual usage old product
+  annualUsageNew         String?   // Annual usage new product
+  replacingItems         String?   // List items that will be replaced
+
+  // ── Step 4 – Specific Product & Usage (slimmed) ──
   governingBody          String?
   multiDepartmentUsage   String?
   anticipatedMonthlyUsage String
   specialHandling        String?
-  trainingRequired       String?
-  usedWithOtherProduct   String?
+  usedWithOtherProduct   String?   // legacy; prefer usedWith
 
-  // ── Step 5 – Financial Information ──
-  patientChargeable      String
-  revenueHcpcsCode       String?
+  // ── Step 5 – Financial (slimmed: ROI only) ──
   expectedRoi            String
-  costJustification      String
 
   // ══════════════════════════════════════════
-  // ADMIN / INTERNAL REVIEW (Excel Sections B–E)
+  // ADMIN / INTERNAL REVIEW
   // ══════════════════════════════════════════
 
-  // Request meta (Supply Chain use)
   requestNumber          String?
   assignedEmployee       String?
   dateReceived           DateTime?
 
-  // ── Section B – Material Management Review ──
-  // CURRENT product
+  // Meeting recommendation (Product Request slide)
+  recommendation         Recommendation @default(PENDING)
+  recommendationNotes    String?
+
+  // Section B – Material Management
   currentCatNumber       String?
   currentLawNumber       String?
   currentVendor          String?
   currentContract        String?
-  currentPricing         String?   // price per UOM
+  currentPricing         String?
   currentUom             String?
   currentPkg             String?
   currentEachPricing     String?
   currentVolume          String?
   currentTotalSpend      String?
 
-  // PROPOSED product
   proposedCatNumber      String?
   proposedLawNumber      String?
   proposedVendor         String?
@@ -97,43 +112,40 @@ model Submission {
   proposedVolume         String?
   proposedTotalSpend     String?
 
-  // Cost summary
   additionalCosts        String?
   rebatesIncentives      String?
   totalCostProposed      String?
-  costSavings            String?   // positive = savings, negative = increase
+  costSavings            String?
 
-  // Other considerations
   deptsUsingExisting     String?
   mmComments             String?
 
-  // Action taken (Material Mgmt)
-  mmAction               String?   // Implement | Refer to Specialty Team | Contact Requestor | Declined
+  mmAction               String?
   mmActionDate           DateTime?
-  mmSpecialtyTeams       String?   // JSON array or comma list
+  mmSpecialtyTeams       String?
   mmTargetDueDate        DateTime?
   mmDeclineReason        String?
 
-  // ── Section C – VAT Review ──
+  // Section C – VAT Review
   vatReasonForReview     String?
   vatDeptsUsing          String?
   vatTotalCostSavings    String?
-  vatAction              String?   // Accepted | Contact requestor | Evaluation/Trial | Education | Denied
+  vatAction              String?
   vatActionDate          DateTime?
   vatTrialCoordinator    String?
   vatEducationCoordinator String?
   vatDenyReason          String?
   vatNotes               String?
 
-  // ── Section D – Evaluation (optional) ──
+  // Section D – Evaluation
   evalTrialCoordinator   String?
   evalPhone              String?
   evalNotes              String?
   evalAction             String?
   evalActionDate         DateTime?
 
-  // ── Section E – Material Management setup ──
-  inventoryLocation      String?   // Warehouse | Central Supply | Non-Inventory | Service
+  // Section E – Inventory
+  inventoryLocation      String?
   purchaseUom            String?
   issueUom               String?
   majorClass             String?
@@ -141,8 +153,8 @@ model Submission {
   accountGlCat           String?
   reorderPoint           String?
   reorderQty             String?
-  isReplacementProduct   String?   // Yes | No
-  sohTreatment           String?   // Phase-out | Return for Credit | Other
+  isReplacementProduct   String?
+  sohTreatment           String?
 
   files File[]
 }
@@ -151,7 +163,7 @@ model File {
   id           String     @id @default(cuid())
   submissionId String
   submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  field        String     // "quote" | "payorMix"
+  field        String
   originalName String
   path         String
   mimeType     String

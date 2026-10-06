@@ -19,6 +19,7 @@ export async function PATCH(req: NextRequest) {
     const allowed = [
       "status", "archived",
       "requestNumber", "assignedEmployee", "dateReceived",
+      "recommendation", "recommendationNotes",
       // Section B
       "currentCatNumber", "currentLawNumber", "currentVendor", "currentContract",
       "currentPricing", "currentUom", "currentPkg", "currentEachPricing",

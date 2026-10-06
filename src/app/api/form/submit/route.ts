@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
-    // Create submission first
     const submission = await prisma.submission.create({
       data: {
         typeOfRequest: data.typeOfRequest,
@@ -44,23 +43,29 @@ export async function POST(req: NextRequest) {
         productClassification: data.productClassification,
         isMinorEquipment: data.isMinorEquipment,
         capitalEquipmentInfo: data.capitalEquipmentInfo || null,
-        purposeOfRequest: data.purposeOfRequest,
-        reasonForRequest: data.reasonForRequest,
-        concernsWithExisting: data.concernsWithExisting || null,
+        // Product request / step 3
+        presenters: data.presenters || null,
+        teamLeads: data.teamLeads || null,
+        purpose: data.purpose,
+        procedures: data.procedures,
+        usedWith: data.usedWith || null,
+        departmentsImpacted: data.departmentsImpacted || null,
+        providersImpacted: data.providersImpacted || null,
+        reasonsForRequest: data.reasonsForRequest,
         currentProcedures: data.currentProcedures,
-        clinicalOutcome: data.clinicalOutcome,
-        measureEffectiveness: data.measureEffectiveness,
         clinicalMetrics: data.clinicalMetrics,
+        // Step 4
         governingBody: data.governingBody || null,
         multiDepartmentUsage: data.multiDepartmentUsage || null,
         anticipatedMonthlyUsage: data.anticipatedMonthlyUsage,
         specialHandling: data.specialHandling || null,
-        trainingRequired: data.trainingRequired || null,
         usedWithOtherProduct: data.usedWithOtherProduct || null,
-        patientChargeable: data.patientChargeable,
-        revenueHcpcsCode: data.revenueHcpcsCode || null,
+        // Step 5 financials
+        proposedAnnualCostImpact: data.proposedAnnualCostImpact,
+        annualUsageOld: data.annualUsageOld || null,
+        annualUsageNew: data.annualUsageNew || null,
+        replacingItems: data.replacingItems || null,
         expectedRoi: data.expectedRoi,
-        costJustification: data.costJustification,
       },
     });
 
@@ -71,7 +76,6 @@ export async function POST(req: NextRequest) {
     const payorFiles = formData.getAll("payorMix") as File[];
 
     if (quoteFiles.length === 0) {
-      // cleanup and reject
       await prisma.submission.delete({ where: { id: submission.id } });
       return NextResponse.json(
         { error: "At least one quote file is required" },
@@ -104,11 +108,9 @@ export async function POST(req: NextRequest) {
     await saveFiles(payorFiles, "payorMix");
 
     return NextResponse.json({ success: true, id: submission.id });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Submit error:", err);
-    return NextResponse.json(
-      { error: err.message || "Internal server error" },
-      { status: 500 }
-    );
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

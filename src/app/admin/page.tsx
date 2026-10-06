@@ -84,6 +84,13 @@ export default async function AdminDashboard({
                       >
                         {s.productServiceName}
                       </Link>
+                      {" · "}
+                      <Link
+                        href={`/admin/submissions/${s.id}/present`}
+                        className="text-sm font-normal text-primary hover:underline"
+                      >
+                        Product Request
+                      </Link>
                     </CardTitle>
                     <CardDescription>
                       {s.requestedByNameTitle} · {s.requestingDepartment} ·{" "}

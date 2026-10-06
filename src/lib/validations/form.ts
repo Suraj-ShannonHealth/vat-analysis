@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+const noNa = (msg = "Incomplete responses such as N/A or TBD are not accepted") =>
+  z
+    .string()
+    .min(1, "This field is required")
+    .refine((v) => !/^(n\/?a|tbd|na)$/i.test(v.trim()), { message: msg });
+
 export const step1Schema = z.object({
   typeOfRequest: z.enum(["Medical VAT", "Surgical VAT"], {
     required_error: "Type of Request is required",
@@ -7,24 +13,14 @@ export const step1Schema = z.object({
   requestedBy: z.enum(["Employee", "Provider"], {
     required_error: "Requested By is required",
   }),
-  requestedByNameTitle: z
-    .string()
-    .min(1, "Name and Title is required")
-    .refine((v) => !/^(n\/?a|tbd|na)$/i.test(v.trim()), {
-      message: "Incomplete responses such as N/A or TBD are not accepted",
-    }),
+  requestedByNameTitle: noNa("Name and Title is required"),
   requesterEmail: z.string().email("Valid email is required"),
   requesterPhone: z.string().min(1, "Phone number is required"),
   requestingDepartment: z.string().min(1, "Department/Unit is required"),
   isNewProviderService: z.enum(["Yes", "No"], {
     required_error: "This field is required",
   }),
-  productServiceName: z
-    .string()
-    .min(1, "Product/Service name is required")
-    .refine((v) => !/^(n\/?a|tbd|na)$/i.test(v.trim()), {
-      message: "Incomplete responses such as N/A or TBD are not accepted",
-    }),
+  productServiceName: noNa("Product/Service name is required"),
   vendorManufacturer: z.string().min(1, "Vendor/Manufacturer is required"),
   catalogNumber: z.string().min(1, "Catalog/Manufacturer Number is required"),
   manufacturerRep: z
@@ -51,29 +47,18 @@ export const step2Schema = z.object({
   capitalEquipmentInfo: z.string().optional(),
 });
 
+/** Step 3 – Product request details (replaces old operational justification block) */
 export const step3Schema = z.object({
-  purposeOfRequest: z.enum(
-    [
-      "Expense Reduction",
-      "Quality Improvement",
-      "Revenue Enhancement",
-      "Upgraded Technology",
-      "Safety",
-      "Other",
-    ],
-    { required_error: "Purpose of Request is required" }
-  ),
-  reasonForRequest: z
-    .string()
-    .min(1, "Reason for request is required")
-    .refine((v) => !/^(n\/?a|tbd|na)$/i.test(v.trim()), {
-      message: "Incomplete responses such as N/A or TBD are not accepted",
-    }),
-  concernsWithExisting: z.string().optional(),
-  currentProcedures: z.string().min(1, "This field is required"),
-  clinicalOutcome: z.string().min(1, "Clinical outcome is required"),
-  measureEffectiveness: z.string().min(1, "This field is required"),
-  clinicalMetrics: z.string().min(1, "Clinical metrics is required"),
+  presenters: z.string().optional(),
+  teamLeads: z.string().optional(),
+  purpose: noNa("Purpose is required"),
+  procedures: noNa("Procedure(s) is required"),
+  usedWith: z.string().optional(),
+  departmentsImpacted: z.string().optional(),
+  providersImpacted: z.string().optional(),
+  reasonsForRequest: noNa("Reasons for request are required"),
+  currentProcedures: noNa("This field is required"),
+  clinicalMetrics: noNa("Clinical metrics is required"),
 });
 
 export const step4Schema = z.object({
@@ -83,20 +68,18 @@ export const step4Schema = z.object({
     .string()
     .min(1, "Anticipated monthly usage is required"),
   specialHandling: z.string().optional(),
-  trainingRequired: z.string().optional(),
   usedWithOtherProduct: z.string().optional(),
 });
 
+/** Step 5 – Financials for Product Request */
 export const step5Schema = z.object({
-  patientChargeable: z.string().min(1, "This field is required"),
-  revenueHcpcsCode: z.string().optional(),
-  expectedRoi: z.string().min(1, "Expected ROI is required"),
-  costJustification: z
-    .string()
-    .min(1, "Cost justification is required")
-    .refine((v) => !/^(n\/?a|tbd|na)$/i.test(v.trim()), {
-      message: "Incomplete responses such as N/A or TBD are not accepted",
-    }),
+  proposedAnnualCostImpact: noNa(
+    "Proposed annual cost increase (savings) is required"
+  ),
+  annualUsageOld: z.string().optional(),
+  annualUsageNew: z.string().optional(),
+  replacingItems: z.string().optional(),
+  expectedRoi: noNa("Expected ROI is required"),
 });
 
 export const fullFormSchema = step1Schema

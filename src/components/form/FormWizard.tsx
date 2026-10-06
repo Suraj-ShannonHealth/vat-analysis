@@ -32,9 +32,9 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   { id: 1, title: "Requestor & Item Information", schema: step1Schema },
   { id: 2, title: "Product Classification", schema: step2Schema },
-  { id: 3, title: "Operational Justification", schema: step3Schema },
+  { id: 3, title: "Product Request Details", schema: step3Schema },
   { id: 4, title: "Specific Product & Usage", schema: step4Schema },
-  { id: 5, title: "Financial Information", schema: step5Schema },
+  { id: 5, title: "Financials", schema: step5Schema },
 ];
 
 export default function FormWizard() {
@@ -569,105 +569,82 @@ function Step3Fields({ form }: { form: any }) {
   } = form;
   return (
     <div className="space-y-5">
-      <div>
-        <Label>17. Purpose of Request *</Label>
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          {[
-            "Expense Reduction",
-            "Quality Improvement",
-            "Revenue Enhancement",
-            "Upgraded Technology",
-            "Safety",
-            "Other",
-          ].map((opt) => (
-            <label key={opt} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                value={opt}
-                {...register("purposeOfRequest")}
-              />
-              {opt}
-            </label>
-          ))}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="presenters">Presenter(s)</Label>
+          <Input id="presenters" {...register("presenters")} className="mt-1" placeholder="Who will present this request" />
         </div>
-        <FieldError error={errors.purposeOfRequest} />
+        <div>
+          <Label htmlFor="teamLeads">Team Lead(s)</Label>
+          <Input id="teamLeads" {...register("teamLeads")} className="mt-1" placeholder="Team lead name(s)" />
+        </div>
       </div>
 
       <div>
-        <Label htmlFor="reasonForRequest">
-          18. Describe reason(s) for new/replacement product request *
-        </Label>
-        <Textarea
-          id="reasonForRequest"
-          {...register("reasonForRequest")}
+        <Label htmlFor="purpose">Purpose *</Label>
+        <Input
+          id="purpose"
+          {...register("purpose")}
           className="mt-1"
-          rows={3}
+          placeholder="e.g. Cost savings and unique products"
         />
-        <FieldError error={errors.reasonForRequest} />
+        <FieldError error={errors.purpose} />
       </div>
 
       <div>
-        <Label htmlFor="concernsWithExisting">
-          19. Describe concern(s) with existing product (if applicable)
-        </Label>
-        <Textarea
-          id="concernsWithExisting"
-          {...register("concernsWithExisting")}
+        <Label htmlFor="procedures">Procedure(s) — which procedures will this be used in? *</Label>
+        <Textarea id="procedures" {...register("procedures")} className="mt-1" rows={2} />
+        <FieldError error={errors.procedures} />
+      </div>
+
+      <div>
+        <Label htmlFor="usedWith">Used with</Label>
+        <Input
+          id="usedWith"
+          {...register("usedWith")}
           className="mt-1"
-          rows={3}
+          placeholder="e.g. Current nerve monitoring system"
         />
+      </div>
+
+      <div>
+        <Label htmlFor="departmentsImpacted">Department(s) impacted</Label>
+        <Input
+          id="departmentsImpacted"
+          {...register("departmentsImpacted")}
+          className="mt-1"
+          placeholder="e.g. ENT, General Surgery"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="providersImpacted">Provider(s) — doctors impacted</Label>
+        <Textarea id="providersImpacted" {...register("providersImpacted")} className="mt-1" rows={2} />
+      </div>
+
+      <div>
+        <Label htmlFor="reasonsForRequest">Reasons for Request *</Label>
+        <Textarea
+          id="reasonsForRequest"
+          {...register("reasonsForRequest")}
+          className="mt-1"
+          rows={4}
+          placeholder={"• Reason one\\n• Reason two\\n• Reason three"}
+        />
+        <FieldError error={errors.reasonsForRequest} />
       </div>
 
       <div>
         <Label htmlFor="currentProcedures">
-          20. How are procedures currently being performed without the use of
-          this product? *
+          How are procedures currently being performed without this product? *
         </Label>
-        <Textarea
-          id="currentProcedures"
-          {...register("currentProcedures")}
-          className="mt-1"
-          rows={3}
-        />
+        <Textarea id="currentProcedures" {...register("currentProcedures")} className="mt-1" rows={3} />
         <FieldError error={errors.currentProcedures} />
       </div>
 
       <div>
-        <Label htmlFor="clinicalOutcome">
-          21. Intended clinical outcome or goal of this product *
-        </Label>
-        <Textarea
-          id="clinicalOutcome"
-          {...register("clinicalOutcome")}
-          className="mt-1"
-          rows={3}
-        />
-        <FieldError error={errors.clinicalOutcome} />
-      </div>
-
-      <div>
-        <Label htmlFor="measureEffectiveness">
-          22. How will you measure the effectiveness of this product? *
-        </Label>
-        <Textarea
-          id="measureEffectiveness"
-          {...register("measureEffectiveness")}
-          className="mt-1"
-          rows={3}
-        />
-        <FieldError error={errors.measureEffectiveness} />
-      </div>
-
-      <div>
-        <Label htmlFor="clinicalMetrics">
-          23. What clinical metrics will this product improve? *
-        </Label>
-        <Textarea
-          id="clinicalMetrics"
-          {...register("clinicalMetrics")}
-          className="mt-1"
-          rows={3}
-        />
+        <Label htmlFor="clinicalMetrics">What clinical metrics will this product improve? *</Label>
+        <Textarea id="clinicalMetrics" {...register("clinicalMetrics")} className="mt-1" rows={3} />
         <FieldError error={errors.clinicalMetrics} />
       </div>
     </div>
@@ -726,18 +703,6 @@ function Step4Fields({ form }: { form: any }) {
         />
       </div>
 
-      <div>
-        <Label htmlFor="trainingRequired">
-          28. Will this product require any specific training or support for
-          implementation?
-        </Label>
-        <Textarea
-          id="trainingRequired"
-          {...register("trainingRequired")}
-          className="mt-1"
-          rows={2}
-        />
-      </div>
 
       <div>
         <Label htmlFor="usedWithOtherProduct">
@@ -762,54 +727,40 @@ function Step5Fields({ form }: { form: any }) {
   return (
     <div className="space-y-5">
       <div>
-        <Label htmlFor="patientChargeable">
-          30. Is this product a patient chargeable item? *
+        <Label htmlFor="proposedAnnualCostImpact">
+          Proposed annual cost increase (savings) *
         </Label>
         <Input
-          id="patientChargeable"
-          {...register("patientChargeable")}
+          id="proposedAnnualCostImpact"
+          {...register("proposedAnnualCostImpact")}
           className="mt-1"
+          placeholder="e.g. $9,500 savings or $12,000 increase"
         />
-        <FieldError error={errors.patientChargeable} />
+        <FieldError error={errors.proposedAnnualCostImpact} />
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="annualUsageOld">Annual usage — old product</Label>
+          <Input id="annualUsageOld" {...register("annualUsageOld")} className="mt-1" placeholder="e.g. 100 a year" />
+        </div>
+        <div>
+          <Label htmlFor="annualUsageNew">Annual usage — new product</Label>
+          <Input id="annualUsageNew" {...register("annualUsageNew")} className="mt-1" placeholder="e.g. 50 a year" />
+        </div>
       </div>
 
       <div>
-        <Label htmlFor="revenueHcpcsCode">
-          31. Please provide the revenue/HCPCS code
-        </Label>
-        <Input
-          id="revenueHcpcsCode"
-          {...register("revenueHcpcsCode")}
-          className="mt-1"
-        />
+        <Label htmlFor="replacingItems">Replacing — list items that will be replaced</Label>
+        <Textarea id="replacingItems" {...register("replacingItems")} className="mt-1" rows={3} />
       </div>
 
       <div>
         <Label htmlFor="expectedRoi">
-          32. What is the expected Return on Investment from this product? (ex:
-          reduced hospital stays, fewer complications, etc.) *
+          Expected Return on Investment (e.g. reduced hospital stays, fewer complications) *
         </Label>
-        <Textarea
-          id="expectedRoi"
-          {...register("expectedRoi")}
-          className="mt-1"
-          rows={3}
-        />
+        <Textarea id="expectedRoi" {...register("expectedRoi")} className="mt-1" rows={3} />
         <FieldError error={errors.expectedRoi} />
-      </div>
-
-      <div>
-        <Label htmlFor="costJustification">
-          33. Is the cost of this product justified by the clinical benefits or
-          improved patient outcomes? Please explain *
-        </Label>
-        <Textarea
-          id="costJustification"
-          {...register("costJustification")}
-          className="mt-1"
-          rows={3}
-        />
-        <FieldError error={errors.costJustification} />
       </div>
     </div>
   );

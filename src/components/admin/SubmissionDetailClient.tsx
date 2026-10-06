@@ -28,6 +28,7 @@ import {
   FlaskConical,
   Warehouse,
   CheckCircle2,
+  Presentation,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,23 +61,28 @@ type Submission = {
   productClassification: string;
   isMinorEquipment: string;
   capitalEquipmentInfo: string | null;
-  purposeOfRequest: string;
-  reasonForRequest: string;
-  concernsWithExisting: string | null;
+  presenters: string | null;
+  teamLeads: string | null;
+  purpose: string;
+  procedures: string;
+  usedWith: string | null;
+  departmentsImpacted: string | null;
+  providersImpacted: string | null;
+  reasonsForRequest: string;
   currentProcedures: string;
-  clinicalOutcome: string;
-  measureEffectiveness: string;
   clinicalMetrics: string;
   governingBody: string | null;
   multiDepartmentUsage: string | null;
   anticipatedMonthlyUsage: string;
   specialHandling: string | null;
-  trainingRequired: string | null;
   usedWithOtherProduct: string | null;
-  patientChargeable: string;
-  revenueHcpcsCode: string | null;
+  proposedAnnualCostImpact: string;
+  annualUsageOld: string | null;
+  annualUsageNew: string | null;
+  replacingItems: string | null;
   expectedRoi: string;
-  costJustification: string;
+  recommendation: string;
+  recommendationNotes: string | null;
   // admin fields
   requestNumber: string | null;
   assignedEmployee: string | null;
@@ -140,7 +146,7 @@ type Submission = {
 };
 
 const TABS = [
-  { id: "summary", label: "Summary", icon: ClipboardList },
+  { id: "summary", label: "Overview", icon: ClipboardList },
   { id: "request", label: "Request Details", icon: Package },
   { id: "material", label: "Material Review", icon: Scale },
   { id: "vat", label: "VAT Review", icon: CheckCircle2 },
@@ -255,7 +261,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Su
       mmSpecialtyTeams: s.mmSpecialtyTeams || "",
       mmTargetDueDate: s.mmTargetDueDate ? s.mmTargetDueDate.slice(0, 10) : "",
       mmDeclineReason: s.mmDeclineReason || "",
-      vatReasonForReview: s.vatReasonForReview || s.purposeOfRequest || "",
+      vatReasonForReview: s.vatReasonForReview || s.purpose || "",
       vatDeptsUsing: s.vatDeptsUsing || "",
       vatTotalCostSavings: s.vatTotalCostSavings || "",
       vatAction: s.vatAction || "",
@@ -335,6 +341,12 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Su
           status={initial.status}
           archived={initial.archived}
         />
+        <Link href={`/admin/submissions/${initial.id}/present`}>
+          <Button size="sm" variant="outline">
+            <Presentation className="h-4 w-4 mr-1" />
+            Product Request
+          </Button>
+        </Link>
         <Button size="sm" onClick={save} disabled={saving}>
           {saving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -380,7 +392,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Su
               <Field label="Catalog #" value={initial.catalogNumber} />
               <Field label="Product Type" value={initial.productType} />
               <Field label="Classification" value={initial.productClassification} />
-              <Field label="Purpose" value={initial.purposeOfRequest} />
+              <Field label="Purpose" value={initial.purpose} />
               <Field label="Anticipated Monthly Usage" value={initial.anticipatedMonthlyUsage} />
               <Field label="Requested By" value={`${initial.requestedByNameTitle} (${initial.requestedBy})`} />
               <Field label="Department" value={initial.requestingDepartment} />
@@ -420,18 +432,27 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Su
           </Card>
 
           <Card className="md:col-span-3">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Clinical Justification (from requestor)</CardTitle>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-base">Product Request snapshot</CardTitle>
+              <Link href={`/admin/submissions/${initial.id}/present`} className="text-sm text-primary hover:underline">
+                Open meeting view →
+              </Link>
             </CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-x-6">
-              <Field label="Reason for request" value={initial.reasonForRequest} />
-              <Field label="Concerns with existing" value={initial.concernsWithExisting} />
+              <Field label="Presenter(s)" value={initial.presenters} />
+              <Field label="Team Lead(s)" value={initial.teamLeads} />
+              <Field label="Purpose" value={initial.purpose} />
+              <Field label="Procedure(s)" value={initial.procedures} />
+              <Field label="Used with" value={initial.usedWith} />
+              <Field label="Department(s)" value={initial.departmentsImpacted} />
+              <Field label="Provider(s)" value={initial.providersImpacted} />
+              <Field label="Reasons for request" value={initial.reasonsForRequest} />
               <Field label="Current procedures" value={initial.currentProcedures} />
-              <Field label="Intended clinical outcome" value={initial.clinicalOutcome} />
-              <Field label="How effectiveness measured" value={initial.measureEffectiveness} />
-              <Field label="Clinical metrics improved" value={initial.clinicalMetrics} />
+              <Field label="Clinical metrics" value={initial.clinicalMetrics} />
+              <Field label="Proposed annual cost impact" value={initial.proposedAnnualCostImpact} />
+              <Field label="Annual usage old / new" value={[ initial.annualUsageOld, initial.annualUsageNew ].filter(Boolean).join(" / ") || null} />
+              <Field label="Replacing" value={initial.replacingItems} />
               <Field label="Expected ROI" value={initial.expectedRoi} />
-              <Field label="Cost justification" value={initial.costJustification} />
             </CardContent>
           </Card>
         </div>
@@ -474,10 +495,10 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Su
                 <Field label="Multi-department usage" value={initial.multiDepartmentUsage} />
                 <Field label="Anticipated monthly usage" value={initial.anticipatedMonthlyUsage} />
                 <Field label="Special handling" value={initial.specialHandling} />
-                <Field label="Training required" value={initial.trainingRequired} />
+                <Field label="Special handling" value={initial.specialHandling} />
                 <Field label="Used with other product" value={initial.usedWithOtherProduct} />
-                <Field label="Patient chargeable" value={initial.patientChargeable} />
-                <Field label="Revenue/HCPCS code" value={initial.revenueHcpcsCode} />
+                <Field label="Proposed annual cost impact" value={initial.proposedAnnualCostImpact} />
+                <Field label="Annual usage new" value={initial.annualUsageNew} />
               </dl>
             </CardContent>
           </Card>
@@ -486,15 +507,15 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Su
               <CardTitle className="text-base">Operational & Financial Justification</CardTitle>
             </CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-x-6">
-              <Field label="Purpose of Request" value={initial.purposeOfRequest} />
-              <Field label="Reason for request" value={initial.reasonForRequest} />
-              <Field label="Concerns with existing" value={initial.concernsWithExisting} />
+              <Field label="Purpose" value={initial.purpose} />
+              <Field label="Reasons for request" value={initial.reasonsForRequest} />
+              <Field label="Used with" value={initial.usedWith} />
               <Field label="Current procedures" value={initial.currentProcedures} />
-              <Field label="Clinical outcome" value={initial.clinicalOutcome} />
-              <Field label="Measure effectiveness" value={initial.measureEffectiveness} />
+              <Field label="Procedure(s)" value={initial.procedures} />
+              <Field label="Clinical metrics" value={initial.clinicalMetrics} />
               <Field label="Clinical metrics" value={initial.clinicalMetrics} />
               <Field label="Expected ROI" value={initial.expectedRoi} />
-              <Field label="Cost justification" value={initial.costJustification} />
+              <Field label="Replacing" value={initial.replacingItems} />
             </CardContent>
           </Card>
         </div>

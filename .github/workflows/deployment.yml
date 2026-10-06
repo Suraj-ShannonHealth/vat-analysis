@@ -1,9 +1,10 @@
-# Deploy VAT Approval Form to vsauto3 (same server as Locum / Automation-Hub)
-# Requires: self-hosted runner registered on THIS repository
+# Deploy VAT Analysis (VAT Approval Form) to vsauto3
+# App path: /home/suraj/projects/vat-analysis
+# PM2 name: vat-analysis
 #
-# GitHub repo secrets (Settings → Secrets and variables → Actions):
-#   ADMIN_PASSWORD   (required) — admin login password
-#   ADMIN_USERNAME   (optional) — defaults to "admin"
+# GitHub secrets:
+#   ADMIN_PASSWORD  (required)
+#   ADMIN_USERNAME  (optional, default: admin)
 #
 name: Deployment
 
@@ -14,7 +15,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-vat-approval-form
+  group: deploy-vat-analysis
   cancel-in-progress: false
 
 jobs:
@@ -44,10 +45,11 @@ jobs:
         env:
           DATABASE_URL: "file:./vat_prod.db"
 
-      - name: Deploy to server app directory
+      - name: Deploy to server
         env:
           APP_DIR: /home/suraj/projects/vat-analysis
           ECOSYSTEM: /home/suraj/projects/ecosystem.config.js
+          PM2_NAME: vat-analysis
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
@@ -55,17 +57,15 @@ jobs:
 
           if [ -z "${ADMIN_PASSWORD:-}" ]; then
             echo "ERROR: GitHub secret ADMIN_PASSWORD is not set."
-            echo "Add it under Settings → Secrets and variables → Actions"
             exit 1
           fi
 
           ADMIN_USER="${ADMIN_USERNAME:-admin}"
 
-          echo "==> Target: $APP_DIR"
+          echo "==> Target: $APP_DIR (PM2: $PM2_NAME)"
           mkdir -p "$APP_DIR/public/files"
           mkdir -p "$APP_DIR/prisma"
 
-          # Sync built app; never wipe DB, uploads
           rsync -a --delete \
             --exclude 'node_modules' \
             --exclude '.git' \
@@ -80,38 +80,38 @@ jobs:
             --exclude '.env*.local' \
             ./ "$APP_DIR/"
 
-          # Write/update .env from secrets (password never stored in the workflow file)
-          cat > "$APP_DIR/.env" << ENVEOF
-          DATABASE_URL="file:./vat_prod.db"
-          ADMIN_USERNAME="${ADMIN_USER}"
-          ADMIN_PASSWORD="${ADMIN_PASSWORD}"
-          NODE_ENV=production
-          PORT=3010
-          ENVEOF
+          # printf avoids YAML/heredoc issues
+          printf '%s\n' \
+            "DATABASE_URL=\"file:./vat_prod.db\"" \
+            "ADMIN_USERNAME=\"${ADMIN_USER}\"" \
+            "ADMIN_PASSWORD=\"${ADMIN_PASSWORD}\"" \
+            "NODE_ENV=production" \
+            "PORT=3010" \
+            > "$APP_DIR/.env"
           chmod 600 "$APP_DIR/.env"
-          echo "==> .env updated (DATABASE_URL=vat_prod.db, admin from GitHub secrets)"
+          echo "==> .env written"
 
           cd "$APP_DIR"
 
-          echo "==> Production install"
+          echo "==> npm ci (production)"
           npm ci --omit=dev --legacy-peer-deps
 
-          echo "==> Prisma generate + db push"
+          echo "==> prisma generate + db push"
           npx prisma generate
           npx prisma db push --skip-generate
 
-          echo "==> PM2 restart"
-          if pm2 describe vat-approval-form >/dev/null 2>&1; then
-            pm2 restart vat-approval-form --update-env
+          echo "==> PM2"
+          if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
+            pm2 restart "$PM2_NAME" --update-env
           else
-            if [ -f "$ECOSYSTEM" ] && grep -q 'vat-approval-form' "$ECOSYSTEM" 2>/dev/null; then
-              pm2 start "$ECOSYSTEM" --only vat-approval-form
+            if [ -f "$ECOSYSTEM" ] && grep -q "$PM2_NAME" "$ECOSYSTEM" 2>/dev/null; then
+              pm2 start "$ECOSYSTEM" --only "$PM2_NAME"
             else
-              echo "==> Starting via npm (add entry to $ECOSYSTEM for permanence)"
-              pm2 start npm --name vat-approval-form --cwd "$APP_DIR" -- start
+              echo "==> No ecosystem entry for $PM2_NAME — starting directly"
+              pm2 start npm --name "$PM2_NAME" --cwd "$APP_DIR" -- start
             fi
             pm2 save
           fi
 
-          pm2 status vat-approval-form || true
+          pm2 status "$PM2_NAME" || true
           echo "==> Deploy complete → http://172.16.11.138:3010"

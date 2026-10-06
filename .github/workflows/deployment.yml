@@ -82,12 +82,12 @@ jobs:
 
           # Write/update .env from secrets (password never stored in the workflow file)
           cat > "$APP_DIR/.env" << ENVEOF
-DATABASE_URL="file:./vat_prod.db"
-ADMIN_USERNAME="${ADMIN_USER}"
-ADMIN_PASSWORD="${ADMIN_PASSWORD}"
-NODE_ENV=production
-PORT=3010
-ENVEOF
+          DATABASE_URL="file:./vat_prod.db"
+          ADMIN_USERNAME="${ADMIN_USER}"
+          ADMIN_PASSWORD="${ADMIN_PASSWORD}"
+          NODE_ENV=production
+          PORT=3010
+          ENVEOF
           chmod 600 "$APP_DIR/.env"
           echo "==> .env updated (DATABASE_URL=vat_prod.db, admin from GitHub secrets)"
 

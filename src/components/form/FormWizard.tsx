@@ -63,6 +63,13 @@ export default function FormWizard() {
     mode: "onChange",
   });
 
+  function newId(): string {
+    if(typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"){
+      return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+  }
+
   const onNext = async () => {
     const valid = await form.trigger();
     if (!valid) return;
@@ -114,7 +121,7 @@ export default function FormWizard() {
     }
 
     const mapped = valid.map((f) => ({
-      id: crypto.randomUUID(),
+      id: newId(),
       name: f.name,
       field,
       size: f.size,

@@ -9,9 +9,10 @@ export async function POST(req: NextRequest) {
 
     if (username === creds.username && password === creds.password) {
       const res = NextResponse.json({ success: true });
+      const useSecure = process.env.COOKIE_SECURE === "true";
       res.cookies.set(ADMIN_SESSION_COOKIE, SESSION_VALUE, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: useSecure,
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 24 * 7, // 7 days

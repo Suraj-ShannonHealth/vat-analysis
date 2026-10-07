@@ -330,7 +330,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
           <h1 className="text-lg font-bold truncate">{initial.productServiceName}</h1>
           <p className="text-xs text-muted-foreground">
             {initial.requestedByNameTitle} · {initial.requestingDepartment} ·{" "}
-            {new Date(initial.createdAt).toLocaleString()}
+            {new Date(initial.createdAt).toLocaleDateString()}
           </p>
         </div>
         <Badge variant={statusVariant[initial.status] || "secondary"}>
@@ -398,36 +398,6 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               <Field label="Department" value={initial.requestingDepartment} />
               <Field label="Email" value={initial.requesterEmail} />
               <Field label="Phone" value={initial.requesterPhone} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Supply Chain Meta</CardTitle>
-              <CardDescription>Internal tracking fields</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <EditableField
-                label="Request Number"
-                name="requestNumber"
-                value={form.requestNumber}
-                onChange={onChange}
-                placeholder="e.g. 1389"
-              />
-              <EditableField
-                label="Assigned Employee"
-                name="assignedEmployee"
-                value={form.assignedEmployee}
-                onChange={onChange}
-                placeholder="Initials"
-              />
-              <EditableField
-                label="Date Received"
-                name="dateReceived"
-                value={form.dateReceived}
-                onChange={onChange}
-                type="date"
-              />
             </CardContent>
           </Card>
 

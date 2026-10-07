@@ -104,7 +104,7 @@ export default async function AdminDashboard({
               </CardHeader>
               <CardContent className="pt-0 flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {new Date(s.createdAt).toLocaleString()} · {s.files.length}{" "}
+                  {new Date(s.createdAt).toLocaleDateString()} · {s.files.length}{" "}
                   file(s)
                 </span>
                 <StatusActions

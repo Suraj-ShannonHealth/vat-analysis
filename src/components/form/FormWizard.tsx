@@ -632,7 +632,7 @@ function Step3Fields({ form }: { form: StepForm }) {
           {...register("reasonsForRequest")}
           className="mt-1"
           rows={4}
-          placeholder={"• Reason one\\n• Reason two\\n• Reason three"}
+          placeholder={"Please provide the reasons for your request"}
         />
         <FieldError error={errors.reasonsForRequest} />
       </div>

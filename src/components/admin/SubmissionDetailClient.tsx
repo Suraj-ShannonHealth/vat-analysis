@@ -23,7 +23,6 @@ import {
   Save,
   Loader2,
   Package,
-  ClipboardList,
   Scale,
   FlaskConical,
   Warehouse,
@@ -146,7 +145,6 @@ export type AdminSubmission = {
 };
 
 const TABS = [
-  { id: "summary", label: "Overview", icon: ClipboardList },
   { id: "request", label: "Request Details", icon: Package },
   { id: "material", label: "Material Review", icon: Scale },
   { id: "vat", label: "VAT Review", icon: CheckCircle2 },
@@ -223,7 +221,7 @@ function EditableField({
 
 export function SubmissionDetailClient({ submission: initial }: { submission: AdminSubmission }) {
   const router = useRouter();
-  const [tab, setTab] = useState<TabId>("summary");
+  const [tab, setTab] = useState<TabId>("request");
   const [form, setForm] = useState<Record<string, string>>(() => {
     const s = initial;
     return {
@@ -378,55 +376,6 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
         ))}
       </div>
 
-      {/* ── SUMMARY ── */}
-      {tab === "summary" && (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="md:col-span-2">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Request Snapshot</CardTitle>
-            </CardHeader>
-            <CardContent className="grid sm:grid-cols-2 gap-x-6">
-              <Field label="Product / Service" value={initial.productServiceName} />
-              <Field label="Type of Request" value={initial.typeOfRequest} />
-              <Field label="Vendor / Manufacturer" value={initial.vendorManufacturer} />
-              <Field label="Catalog #" value={initial.catalogNumber} />
-              <Field label="Product Type" value={initial.productType} />
-              <Field label="Classification" value={initial.productClassification} />
-              <Field label="Purpose" value={initial.purpose} />
-              <Field label="Anticipated Monthly Usage" value={initial.anticipatedMonthlyUsage} />
-              <Field label="Requested By" value={`${initial.requestedByNameTitle} (${initial.requestedBy})`} />
-              <Field label="Department" value={initial.requestingDepartment} />
-              <Field label="Email" value={initial.requesterEmail} />
-              <Field label="Phone" value={initial.requesterPhone} />
-            </CardContent>
-          </Card>
-
-          <Card className="md:col-span-3">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Product Request snapshot</CardTitle>
-              <Link href={`/admin/submissions/${initial.id}/present`} className="text-sm text-primary hover:underline">
-                Open meeting view →
-              </Link>
-            </CardHeader>
-            <CardContent className="grid sm:grid-cols-2 gap-x-6">
-              <Field label="Presenter(s)" value={initial.presenters} />
-              <Field label="Team Lead(s)" value={initial.teamLeads} />
-              <Field label="Purpose" value={initial.purpose} />
-              <Field label="Procedure(s)" value={initial.procedures} />
-              <Field label="Used with" value={initial.usedWith} />
-              <Field label="Department(s)" value={initial.departmentsImpacted} />
-              <Field label="Provider(s)" value={initial.providersImpacted} />
-              <Field label="Reasons for request" value={initial.reasonsForRequest} />
-              <Field label="Current procedures" value={initial.currentProcedures} />
-              <Field label="Clinical metrics" value={initial.clinicalMetrics} />
-              <Field label="Proposed annual cost impact" value={initial.proposedAnnualCostImpact} />
-              <Field label="Annual usage old / new" value={[ initial.annualUsageOld, initial.annualUsageNew ].filter(Boolean).join(" / ") || null} />
-              <Field label="Replacing" value={initial.replacingItems} />
-              <Field label="Expected ROI" value={initial.expectedRoi} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* ── REQUEST DETAILS (full form) ── */}
       {tab === "request" && (

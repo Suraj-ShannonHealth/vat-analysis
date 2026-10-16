@@ -12,6 +12,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/** Shannon-inspired medical green */
+const GREEN = {
+  primary: "#0B6E4F",
+  dark: "#08523B",
+  soft: "#E6F4EF",
+  border: "#0B6E4F",
+};
+
 export type ProductRequestSubmission = {
   id: string;
   status: string;
@@ -30,6 +38,7 @@ export type ProductRequestSubmission = {
   providersImpacted: string | null;
   reasonsForRequest: string;
   requestingDepartment: string;
+  costImpact?: string | null;
   proposedAnnualCostImpact: string;
   annualUsageOld: string | null;
   annualUsageNew: string | null;
@@ -56,7 +65,10 @@ function Section({
 }) {
   return (
     <section className="break-inside-avoid">
-      <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500 border-b border-slate-200 pb-2 mb-4">
+      <h2
+        className="text-sm font-bold uppercase tracking-[0.12em] pb-2 mb-4 border-b-2"
+        style={{ color: GREEN.primary, borderColor: GREEN.primary }}
+      >
         {title}
       </h2>
       {children}
@@ -75,14 +87,17 @@ function Row({
 }) {
   if (!value) return null;
   return (
-    <div className={cn("py-1.5", large && "py-2")}>
-      <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+    <div className={cn("py-2", large && "py-2.5")}>
+      <dt
+        className="text-xs font-bold uppercase tracking-wide"
+        style={{ color: GREEN.dark }}
+      >
         {label}
       </dt>
       <dd
         className={cn(
-          "mt-0.5 text-slate-900 whitespace-pre-wrap",
-          large ? "text-lg leading-snug" : "text-base leading-snug"
+          "mt-1 text-slate-900 whitespace-pre-wrap font-medium",
+          large ? "text-xl leading-snug" : "text-lg leading-snug"
         )}
       >
         {value}
@@ -157,33 +172,49 @@ export function ProductRequestPresent({
         ? "New Product"
         : initial.productType;
 
+  const costImpactLabel = initial.costImpact
+    ? initial.costImpact
+    : initial.proposedAnnualCostImpact || null;
+
+  const costAmount =
+    initial.costImpact && initial.proposedAnnualCostImpact
+      ? initial.proposedAnnualCostImpact
+      : null;
+
   return (
     <div
       className={cn(
-        "min-h-screen bg-white text-slate-900",
+        "min-h-screen text-slate-900",
         fs ? "p-8 md:p-12" : "p-4 md:p-8"
       )}
+      style={{ backgroundColor: "#F7FAF9" }}
     >
-      {/* Toolbar — hide-ish in print, keep minimal in fullscreen */}
+      {/* Toolbar */}
       <div
         className={cn(
           "flex items-center justify-between gap-3 mb-6 print:hidden",
-          fs && "opacity-40 hover:opacity-100 transition-opacity"
+          fs && "opacity-50 hover:opacity-100 transition-opacity"
         )}
       >
         <Link href={`/admin/submissions/${initial.id}`}>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-base font-semibold text-slate-800">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to detail
           </Button>
         </Link>
         <div className="flex items-center gap-2">
           {saved && (
-            <span className="text-xs text-emerald-600 flex items-center gap-1">
-              <Check className="h-3.5 w-3.5" /> Saved
+            <span className="text-sm font-semibold flex items-center gap-1" style={{ color: GREEN.primary }}>
+              <Check className="h-4 w-4" /> Saved
             </span>
           )}
-          <Button variant="outline" size="sm" onClick={toggleFs}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleFs}
+            className="text-base font-semibold border-2"
+            style={{ borderColor: GREEN.primary, color: GREEN.dark }}
+          >
             {fs ? (
               <>
                 <Minimize2 className="h-4 w-4 mr-1" /> Exit fullscreen
@@ -198,31 +229,34 @@ export function ProductRequestPresent({
       </div>
 
       {/* Header */}
-      <header className="border-b-2 border-slate-800 pb-4 mb-8">
+      <header
+        className="rounded-xl px-6 py-5 mb-8 text-white shadow-md"
+        style={{ backgroundColor: GREEN.primary }}
+      >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-1">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/90 mb-1">
               Product Request
             </p>
             <h1
               className={cn(
-                "font-bold tracking-tight text-slate-900",
-                fs ? "text-4xl md:text-5xl" : "text-3xl"
+                "font-bold tracking-tight text-white",
+                fs ? "text-4xl md:text-5xl" : "text-3xl md:text-4xl"
               )}
             >
               {initial.productServiceName}
             </h1>
           </div>
-          <div className="text-right space-y-1">
-            <p className="text-sm">
-              <span className="text-slate-500">Request #</span>{" "}
-              <span className="font-semibold text-lg">
+          <div className="text-right space-y-1 text-white">
+            <p className="text-base">
+              <span className="text-white/80">Request #</span>{" "}
+              <span className="font-bold text-xl">
                 {initial.requestNumber || "—"}
               </span>
             </p>
-            <p className="text-sm">
-              <span className="text-slate-500">Status:</span>{" "}
-              <span className="font-medium">{statusLabel}</span>
+            <p className="text-base">
+              <span className="text-white/80">Status:</span>{" "}
+              <span className="font-bold">{statusLabel}</span>
             </p>
           </div>
         </div>
@@ -234,7 +268,6 @@ export function ProductRequestPresent({
           fs ? "md:grid-cols-2 lg:gap-14" : "md:grid-cols-2 gap-8"
         )}
       >
-        {/* OVERVIEW */}
         <Section title="Overview">
           <dl className="space-y-1">
             <Row label="Description" value={initial.productServiceName} large />
@@ -248,7 +281,6 @@ export function ProductRequestPresent({
           </dl>
         </Section>
 
-        {/* PRODUCT DETAILS */}
         <Section title="Product Details">
           <dl className="space-y-1">
             <Row label="Product Type" value={productTypeShort} />
@@ -260,28 +292,23 @@ export function ProductRequestPresent({
           </dl>
         </Section>
 
-        {/* REASONS */}
         <Section title="Reasons for Request">
           <p
             className={cn(
-              "whitespace-pre-wrap text-slate-800 leading-relaxed",
-              fs ? "text-lg" : "text-base"
+              "whitespace-pre-wrap text-slate-900 font-medium leading-relaxed",
+              fs ? "text-xl" : "text-lg"
             )}
           >
             {initial.reasonsForRequest}
           </p>
         </Section>
 
-        {/* FINANCIALS */}
         <Section title="Financials">
           <dl className="space-y-1">
+            <Row label="Proposed monthly cost impact" value={costImpactLabel} large />
+            <Row label="Monthly cost amount / range" value={costAmount} />
             <Row
-              label="Proposed annual cost increase (savings)"
-              value={initial.proposedAnnualCostImpact}
-              large
-            />
-            <Row
-              label="Annual usage — old / new"
+              label="Monthly usage — old / new"
               value={
                 initial.annualUsageOld || initial.annualUsageNew
                   ? `${initial.annualUsageOld || "—"} / ${initial.annualUsageNew || "—"}`
@@ -294,50 +321,70 @@ export function ProductRequestPresent({
         </Section>
       </div>
 
-      {/* RECOMMENDATION */}
-      <section className="mt-12 pt-8 border-t-2 border-slate-800">
-        <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500 mb-4">
+      {/* Recommendation */}
+      <section
+        className="mt-12 pt-8 border-t-4"
+        style={{ borderColor: GREEN.primary }}
+      >
+        <h2
+          className="text-sm font-bold uppercase tracking-[0.12em] mb-4"
+          style={{ color: GREEN.primary }}
+        >
           Recommendation
         </h2>
         <div className="flex flex-wrap gap-3 md:gap-4">
           {RECS.map(({ value, label }) => {
             const active = rec === value;
+            const colors =
+              value === "APPROVE"
+                ? { border: GREEN.primary, bg: GREEN.soft, text: GREEN.dark }
+                : value === "DENY"
+                  ? { border: "#B91C1C", bg: "#FEF2F2", text: "#991B1B" }
+                  : value === "TRIAL"
+                    ? { border: "#1D4ED8", bg: "#EFF6FF", text: "#1E3A8A" }
+                    : { border: "#B45309", bg: "#FFFBEB", text: "#92400E" };
             return (
               <button
                 key={value}
                 type="button"
                 disabled={saving}
                 onClick={() => saveRec(value)}
-                className={cn(
-                  "min-w-[120px] rounded-lg border-2 px-5 py-3 text-base font-semibold transition-all",
+                className="min-w-[130px] rounded-lg border-2 px-5 py-3.5 text-lg font-bold transition-all"
+                style={
                   active
-                    ? value === "APPROVE"
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-800"
-                      : value === "DENY"
-                        ? "border-red-600 bg-red-50 text-red-800"
-                        : value === "TRIAL"
-                          ? "border-blue-600 bg-blue-50 text-blue-800"
-                          : "border-amber-600 bg-amber-50 text-amber-900"
-                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-500"
-                )}
+                    ? {
+                        borderColor: colors.border,
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                      }
+                    : {
+                        borderColor: "#94A3B8",
+                        backgroundColor: "#fff",
+                        color: "#0F172A",
+                      }
+                }
               >
                 <span
-                  className={cn(
-                    "inline-block w-4 h-4 mr-2 rounded border align-middle",
-                    active ? "bg-current border-current" : "border-slate-400"
-                  )}
+                  className="inline-block w-4 h-4 mr-2 rounded border-2 align-middle"
+                  style={{
+                    borderColor: active ? colors.border : "#64748B",
+                    backgroundColor: active ? colors.border : "transparent",
+                  }}
                 />
                 {label}
               </button>
             );
           })}
         </div>
-        <div className="mt-4 max-w-2xl">
-          <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+        <div className="mt-5 max-w-2xl">
+          <label
+            className="text-xs font-bold uppercase tracking-wide"
+            style={{ color: GREEN.dark }}
+          >
             Notes
           </label>
           <textarea
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-md border-2 border-slate-300 px-3 py-2.5 text-base text-slate-900 font-medium"
             rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

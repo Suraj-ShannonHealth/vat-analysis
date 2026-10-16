@@ -17,6 +17,7 @@ export const step1Schema = z.object({
   requesterEmail: z.string().email("Valid email is required"),
   requesterPhone: z.string().min(1, "Phone number is required"),
   requestingDepartment: z.string().min(1, "Department/Unit is required"),
+  oracleDepartmentNumber: z.string().min(1, "Oracle department number is required"),
   isNewProviderService: z.enum(["Yes", "No"], {
     required_error: "This field is required",
   }),
@@ -71,14 +72,15 @@ export const step4Schema = z.object({
   usedWithOtherProduct: z.string().optional(),
 });
 
-/** Step 5 – Financials for Product Request */
+/** Step 5 – Financials (monthly metrics) */
 export const step5Schema = z.object({
-  proposedAnnualCostImpact: noNa(
-    "Proposed annual cost increase (savings) is required"
-  ),
-  annualUsageOld: z.string().optional(),
-  annualUsageNew: z.string().optional(),
-  replacingItems: z.string().optional(),
+  costImpact: z.enum(["Increase", "Decrease", "No change"], {
+    required_error: "Proposed monthly cost impact is required",
+  }),
+  proposedAnnualCostImpact: z.string().optional(), // amount / range details
+  annualUsageOld: noNa("Monthly usage — old product is required"),
+  annualUsageNew: noNa("Monthly usage — new product is required"),
+  replacingItems: noNa("Replacing items is required"),
   expectedRoi: noNa("Expected ROI is required"),
 });
 

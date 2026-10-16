@@ -51,6 +51,7 @@ export type AdminSubmission = {
   requesterEmail: string;
   requesterPhone: string;
   requestingDepartment: string;
+  oracleDepartmentNumber: string;
   isNewProviderService: string;
   productServiceName: string;
   vendorManufacturer: string;
@@ -75,6 +76,7 @@ export type AdminSubmission = {
   anticipatedMonthlyUsage: string;
   specialHandling: string | null;
   usedWithOtherProduct: string | null;
+  costImpact: string;
   proposedAnnualCostImpact: string;
   annualUsageOld: string | null;
   annualUsageNew: string | null;
@@ -392,6 +394,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                 <Field label="Email" value={initial.requesterEmail} />
                 <Field label="Phone" value={initial.requesterPhone} />
                 <Field label="Department" value={initial.requestingDepartment} />
+                <Field label="Oracle Department Number" value={initial.oracleDepartmentNumber} />
                 <Field label="New provider/service?" value={initial.isNewProviderService} />
                 <Field label="Product/Service" value={initial.productServiceName} />
                 <Field label="Vendor/Manufacturer" value={initial.vendorManufacturer} />
@@ -414,10 +417,11 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                 <Field label="Multi-department usage" value={initial.multiDepartmentUsage} />
                 <Field label="Anticipated monthly usage" value={initial.anticipatedMonthlyUsage} />
                 <Field label="Special handling" value={initial.specialHandling} />
-                <Field label="Special handling" value={initial.specialHandling} />
                 <Field label="Used with other product" value={initial.usedWithOtherProduct} />
-                <Field label="Proposed annual cost impact" value={initial.proposedAnnualCostImpact} />
-                <Field label="Annual usage new" value={initial.annualUsageNew} />
+                <Field label="Monthly cost impact" value={initial.costImpact} />
+                <Field label="Monthly cost amount / range" value={initial.proposedAnnualCostImpact} />
+                <Field label="Monthly usage — old" value={initial.annualUsageOld} />
+                <Field label="Monthly usage — new" value={initial.annualUsageNew} />
               </dl>
             </CardContent>
           </Card>
@@ -431,7 +435,6 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               <Field label="Used with" value={initial.usedWith} />
               <Field label="Current procedures" value={initial.currentProcedures} />
               <Field label="Procedure(s)" value={initial.procedures} />
-              <Field label="Clinical metrics" value={initial.clinicalMetrics} />
               <Field label="Clinical metrics" value={initial.clinicalMetrics} />
               <Field label="Expected ROI" value={initial.expectedRoi} />
               <Field label="Replacing" value={initial.replacingItems} />

@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StatusActions } from "@/components/admin/StatusActions";
+import { downloadSubmissionExcel } from "@/lib/export-submission";
 import {
   ArrowLeft,
   FileText,
@@ -28,6 +29,7 @@ import {
   Warehouse,
   CheckCircle2,
   Presentation,
+  FileSpreadsheet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -319,7 +321,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-secondary/40/95 backdrop-blur border-b flex flex-wrap items-center gap-3">
+      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-secondary/50 backdrop-blur border-b flex flex-wrap items-center gap-3">
         <Link href="/admin">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -341,6 +343,16 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
           status={initial.status}
           archived={initial.archived}
         />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            downloadSubmissionExcel(initial as unknown as Record<string, unknown>, initial.files || [])
+          }
+        >
+          <FileSpreadsheet className="h-4 w-4 mr-1" />
+          Download Excel
+        </Button>
         <Link href={`/admin/submissions/${initial.id}/present`}>
           <Button size="sm" variant="outline">
             <Presentation className="h-4 w-4 mr-1" />
@@ -456,7 +468,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 {/* CURRENT */}
-                <div className="rounded-lg border bg-secondary/40/50 p-4 space-y-3">
+                <div className="rounded-lg border bg-secondary/40 p-4 space-y-3">
                   <h3 className="font-semibold text-sm text-foreground/85 uppercase tracking-wide flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-slate-400" />
                     Current Product

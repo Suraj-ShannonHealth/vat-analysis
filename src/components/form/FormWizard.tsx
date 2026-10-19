@@ -193,7 +193,7 @@ export default function FormWizard() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
-        <div className="flex justify-between text-sm text-muted-foreground mb-2">
+        <div className="flex justify-between text-sm text-foreground/80 mb-2">
           <span>
             Step {currentStep} of 5 — {STEPS[currentStep - 1].title}
           </span>
@@ -222,7 +222,7 @@ export default function FormWizard() {
                   Quote (mandatory){" "}
                   <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-foreground/80">
                   Up to 4 files, 100MB each. Allowed: Word, Excel, PPT, PDF,
                   Image, Video, Audio
                 </p>
@@ -262,7 +262,7 @@ export default function FormWizard() {
                 <Label>
                   Additional payor mix / insurance reimbursement info (optional)
                 </Label>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-foreground/80">
                   Up to 2 files, 10MB each
                 </p>
                 <div className="flex items-center gap-2">
@@ -347,14 +347,14 @@ function FileList({
         >
           <span className="truncate">
             {f.name}{" "}
-            <span className="text-muted-foreground">
+            <span className="text-foreground/80">
               ({(f.size / 1024).toFixed(1)} KB)
             </span>
           </span>
           <button
             type="button"
             onClick={() => onRemove(f.id)}
-            className="text-muted-foreground hover:text-destructive"
+            className="text-foreground/80 hover:text-destructive"
           >
             <X className="h-4 w-4" />
           </button>

@@ -168,7 +168,7 @@ function Field({ label, value }: { label: string; value?: string | null }) {
   if (value == null || value === "") return null;
   return (
     <div className="py-2.5 border-b border-slate-100 last:border-0">
-      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+      <dt className="text-xs font-medium text-foreground/80 uppercase tracking-wide">
         {label}
       </dt>
       <dd className="mt-0.5 text-sm whitespace-pre-wrap text-slate-800">{value}</dd>
@@ -195,7 +195,7 @@ function EditableField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={name} className="text-xs text-muted-foreground">
+      <Label htmlFor={name} className="text-xs text-foreground/80">
         {label}
       </Label>
       {rows ? (
@@ -319,7 +319,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-slate-50/95 backdrop-blur border-b flex flex-wrap items-center gap-3">
+      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-secondary/40/95 backdrop-blur border-b flex flex-wrap items-center gap-3">
         <Link href="/admin">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -328,7 +328,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-bold truncate">{initial.productServiceName}</h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/80">
             {initial.requestedByNameTitle} · {initial.requestingDepartment} ·{" "}
             {new Date(initial.createdAt).toLocaleDateString()}
           </p>
@@ -369,7 +369,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-md whitespace-nowrap transition-colors",
               tab === id
                 ? "bg-white border border-b-white text-primary shadow-sm -mb-px"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/50"
+                : "text-foreground/80 hover:text-foreground hover:bg-white/50"
             )}
           >
             <Icon className="h-3.5 w-3.5" />
@@ -394,7 +394,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                 <Field label="Email" value={initial.requesterEmail} />
                 <Field label="Phone" value={initial.requesterPhone} />
                 <Field label="Department" value={initial.requestingDepartment} />
-                <Field label="Oracle Department Number" value={initial.oracleDepartmentNumber} />
+              <Field label="Oracle Department Number" value={initial.oracleDepartmentNumber} />
                 <Field label="New provider/service?" value={initial.isNewProviderService} />
                 <Field label="Product/Service" value={initial.productServiceName} />
                 <Field label="Vendor/Manufacturer" value={initial.vendorManufacturer} />
@@ -456,8 +456,8 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 {/* CURRENT */}
-                <div className="rounded-lg border bg-slate-50/50 p-4 space-y-3">
-                  <h3 className="font-semibold text-sm text-slate-600 uppercase tracking-wide flex items-center gap-2">
+                <div className="rounded-lg border bg-secondary/40/50 p-4 space-y-3">
+                  <h3 className="font-semibold text-sm text-foreground/85 uppercase tracking-wide flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-slate-400" />
                     Current Product
                   </h3>
@@ -536,7 +536,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               />
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Action Taken</Label>
+                  <Label className="text-xs text-foreground/80">Action Taken</Label>
                   <select
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                     value={form.mmAction}
@@ -617,7 +617,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               />
               <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Action(s) Taken</Label>
+                  <Label className="text-xs text-foreground/80">Action(s) Taken</Label>
                   <select
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                     value={form.vatAction}
@@ -662,7 +662,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
             <EditableField label="Evaluation notes / results" name="evalNotes" value={form.evalNotes} onChange={onChange} rows={4} />
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Action</Label>
+                <Label className="text-xs text-foreground/80">Action</Label>
                 <select
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                   value={form.evalAction}
@@ -691,7 +691,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Inventory Location</Label>
+              <Label className="text-xs text-foreground/80">Inventory Location</Label>
               <select
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm max-w-xs"
                 value={form.inventoryLocation}
@@ -718,7 +718,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
             <div className="grid sm:grid-cols-2 gap-4">
               <EditableField label="Reorder Point" name="reorderPoint" value={form.reorderPoint} onChange={onChange} />
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Replacement Product?</Label>
+                <Label className="text-xs text-foreground/80">Replacement Product?</Label>
                 <select
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                   value={form.isReplacementProduct}
@@ -732,7 +732,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
             </div>
             {form.isReplacementProduct === "Yes" && (
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Treatment of SOH (Stock on Hand)</Label>
+                <Label className="text-xs text-foreground/80">Treatment of SOH (Stock on Hand)</Label>
                 <select
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm max-w-xs"
                   value={form.sohTreatment}
@@ -772,7 +772,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                       >
                         <Download className="h-3.5 w-3.5" />
                         {f.originalName}{" "}
-                        <span className="text-muted-foreground">
+                        <span className="text-foreground/80">
                           ({(f.size / 1024).toFixed(1)} KB)
                         </span>
                       </a>
@@ -794,7 +794,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                       >
                         <Download className="h-3.5 w-3.5" />
                         {f.originalName}{" "}
-                        <span className="text-muted-foreground">
+                        <span className="text-foreground/80">
                           ({(f.size / 1024).toFixed(1)} KB)
                         </span>
                       </a>
@@ -804,7 +804,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               </div>
             )}
             {quotes.length === 0 && payor.length === 0 && (
-              <p className="text-sm text-muted-foreground">No files attached.</p>
+              <p className="text-sm text-foreground/80">No files attached.</p>
             )}
           </CardContent>
         </Card>

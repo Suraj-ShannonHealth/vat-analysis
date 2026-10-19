@@ -4,21 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeft,
-  Maximize2,
-  Minimize2,
-  Check,
-} from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-/** Shannon-inspired medical green */
-const GREEN = {
-  primary: "#0B6E4F",
-  dark: "#08523B",
-  soft: "#E6F4EF",
-  border: "#0B6E4F",
-};
 
 export type ProductRequestSubmission = {
   id: string;
@@ -56,6 +43,23 @@ const RECS = [
   { value: "DENY", label: "Deny" },
 ] as const;
 
+/** Compact label + value row (document style) */
+function Row({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) {
+  if (value == null || value === "") return null;
+  return (
+    <div className="grid grid-cols-[minmax(9.5rem,11rem)_1fr] gap-x-3 gap-y-0.5 py-[3px] text-[15px] leading-snug">
+      <dt className="font-bold text-black shrink-0">{label}</dt>
+      <dd className="text-black whitespace-pre-wrap">{value}</dd>
+    </div>
+  );
+}
+
 function Section({
   title,
   children,
@@ -64,45 +68,12 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="break-inside-avoid">
-      <h2
-        className="text-sm font-bold uppercase tracking-[0.12em] pb-2 mb-4 border-b-2"
-        style={{ color: GREEN.primary, borderColor: GREEN.primary }}
-      >
+    <section className="mt-5 first:mt-0">
+      <h2 className="text-[13px] font-bold uppercase tracking-wide text-black border-b border-black pb-1 mb-2">
         {title}
       </h2>
-      {children}
+      <dl>{children}</dl>
     </section>
-  );
-}
-
-function Row({
-  label,
-  value,
-  large,
-}: {
-  label: string;
-  value?: string | null;
-  large?: boolean;
-}) {
-  if (!value) return null;
-  return (
-    <div className={cn("py-2", large && "py-2.5")}>
-      <dt
-        className="text-xs font-bold uppercase tracking-wide"
-        style={{ color: GREEN.dark }}
-      >
-        {label}
-      </dt>
-      <dd
-        className={cn(
-          "mt-1 text-slate-900 whitespace-pre-wrap font-medium",
-          large ? "text-xl leading-snug" : "text-lg leading-snug"
-        )}
-      >
-        {value}
-      </dd>
-    </div>
   );
 }
 
@@ -162,7 +133,7 @@ export function ProductRequestPresent({
   const statusLabel =
     initial.status === "NEW"
       ? "Pending Review"
-      : initial.status.replace("_", " ");
+      : initial.status.replace(/_/g, " ");
 
   const productTypeShort = initial.productType?.includes("Replacement")
     ? "Replacement"
@@ -172,48 +143,49 @@ export function ProductRequestPresent({
         ? "New Product"
         : initial.productType;
 
-  const costImpactLabel = initial.costImpact
-    ? initial.costImpact
-    : initial.proposedAnnualCostImpact || null;
+  const costImpactLine = [
+    initial.costImpact,
+    initial.proposedAnnualCostImpact,
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
-  const costAmount =
-    initial.costImpact && initial.proposedAnnualCostImpact
-      ? initial.proposedAnnualCostImpact
+  const usageLine =
+    initial.annualUsageOld || initial.annualUsageNew
+      ? `${initial.annualUsageOld || "—"} / ${initial.annualUsageNew || "—"}`
       : null;
 
   return (
     <div
       className={cn(
-        "min-h-screen text-slate-900",
-        fs ? "p-8 md:p-12" : "p-4 md:p-8"
+        "min-h-screen bg-white text-black",
+        fs ? "px-10 py-8 md:px-16 md:py-10" : "px-6 py-5 md:px-10 md:py-6"
       )}
-      style={{ backgroundColor: "#F7FAF9" }}
     >
-      {/* Toolbar */}
+      {/* Minimal toolbar — print hidden */}
       <div
         className={cn(
-          "flex items-center justify-between gap-3 mb-6 print:hidden",
-          fs && "opacity-50 hover:opacity-100 transition-opacity"
+          "flex items-center justify-between gap-2 mb-4 print:hidden",
+          fs && "opacity-40 hover:opacity-100 transition-opacity"
         )}
       >
         <Link href={`/admin/submissions/${initial.id}`}>
-          <Button variant="ghost" size="sm" className="text-base font-semibold text-slate-800">
+          <Button variant="ghost" size="sm" className="text-sm text-black font-medium">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to detail
           </Button>
         </Link>
         <div className="flex items-center gap-2">
           {saved && (
-            <span className="text-sm font-semibold flex items-center gap-1" style={{ color: GREEN.primary }}>
-              <Check className="h-4 w-4" /> Saved
+            <span className="text-sm font-medium text-black flex items-center gap-1">
+              <Check className="h-3.5 w-3.5" /> Saved
             </span>
           )}
           <Button
             variant="outline"
             size="sm"
             onClick={toggleFs}
-            className="text-base font-semibold border-2"
-            style={{ borderColor: GREEN.primary, color: GREEN.dark }}
+            className="text-sm font-medium border-black text-black"
           >
             {fs ? (
               <>
@@ -228,175 +200,111 @@ export function ProductRequestPresent({
         </div>
       </div>
 
-      {/* Header */}
-      <header
-        className="rounded-xl px-6 py-5 mb-8 text-white shadow-md"
-        style={{ backgroundColor: GREEN.primary }}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/90 mb-1">
-              Product Request
-            </p>
-            <h1
-              className={cn(
-                "font-bold tracking-tight text-white",
-                fs ? "text-4xl md:text-5xl" : "text-3xl md:text-4xl"
-              )}
-            >
-              {initial.productServiceName}
-            </h1>
-          </div>
-          <div className="text-right space-y-1 text-white">
-            <p className="text-base">
-              <span className="text-white/80">Request #</span>{" "}
-              <span className="font-bold text-xl">
-                {initial.requestNumber || "—"}
-              </span>
-            </p>
-            <p className="text-base">
-              <span className="text-white/80">Status:</span>{" "}
-              <span className="font-bold">{statusLabel}</span>
-            </p>
-          </div>
-        </div>
-      </header>
-
-      <div
+      {/* Document body — compact print-like layout */}
+      <article
         className={cn(
-          "grid gap-10",
-          fs ? "md:grid-cols-2 lg:gap-14" : "md:grid-cols-2 gap-8"
+          "mx-auto max-w-3xl",
+          fs && "max-w-4xl"
         )}
       >
+        {/* Title */}
+        <h1 className="text-center text-2xl md:text-[1.75rem] font-bold tracking-wide text-black border-b-2 border-black pb-2 mb-3">
+          PRODUCT REQUEST
+        </h1>
+
+        {/* Meta line */}
+        <div className="flex flex-wrap justify-between gap-2 text-[15px] text-black mb-4">
+          <p>
+            <span className="font-bold">Request #</span>{" "}
+            {initial.requestNumber || "—"}
+          </p>
+          <p>
+            <span className="font-bold">Status:</span> {statusLabel}
+          </p>
+        </div>
+
         <Section title="Overview">
-          <dl className="space-y-1">
-            <Row label="Description" value={initial.productServiceName} large />
-            <Row label="Vendor" value={initial.vendorManufacturer} />
-            <Row label="Catalog #" value={initial.catalogNumber} />
-            <Row label="Presenter(s)" value={initial.presenters} />
-            <Row label="Team Lead(s)" value={initial.teamLeads} />
-            <Row label="Purpose" value={initial.purpose} large />
-            <Row label="Requested by" value={initial.requestedByNameTitle} />
-            <Row label="Requesting department" value={initial.requestingDepartment} />
-          </dl>
+          <Row label="Description:" value={initial.productServiceName} />
+          <Row label="Vendor:" value={initial.vendorManufacturer} />
+          <Row label="Catalog #:" value={initial.catalogNumber} />
+          <Row label="Presenter(s):" value={initial.presenters} />
+          <Row label="Team Lead(s):" value={initial.teamLeads} />
+          <Row label="Purpose:" value={initial.purpose} />
+          <Row label="Requested by:" value={initial.requestedByNameTitle} />
+          <Row label="Department:" value={initial.requestingDepartment} />
         </Section>
 
         <Section title="Product Details">
-          <dl className="space-y-1">
-            <Row label="Product Type" value={productTypeShort} />
-            <Row label="Classification" value={initial.productClassification} />
-            <Row label="Procedure(s)" value={initial.procedures} large />
-            <Row label="Used with" value={initial.usedWith} />
-            <Row label="Department(s)" value={initial.departmentsImpacted} />
-            <Row label="Provider(s)" value={initial.providersImpacted} />
-          </dl>
-        </Section>
-
-        <Section title="Reasons for Request">
-          <p
-            className={cn(
-              "whitespace-pre-wrap text-slate-900 font-medium leading-relaxed",
-              fs ? "text-xl" : "text-lg"
-            )}
-          >
-            {initial.reasonsForRequest}
-          </p>
+          <Row label="Product Type:" value={productTypeShort} />
+          <Row label="Classification:" value={initial.productClassification} />
+          <Row label="Procedure(s):" value={initial.procedures} />
+          <Row label="Used with:" value={initial.usedWith} />
+          <Row label="Department(s):" value={initial.departmentsImpacted} />
+          <Row label="Provider(s):" value={initial.providersImpacted} />
+          {initial.reasonsForRequest ? (
+            <div className="grid grid-cols-[minmax(9.5rem,11rem)_1fr] gap-x-3 py-[3px] text-[15px] leading-snug">
+              <dt className="font-bold text-black shrink-0">Reasons for Request:</dt>
+              <dd className="text-black whitespace-pre-wrap">
+                {initial.reasonsForRequest}
+              </dd>
+            </div>
+          ) : null}
         </Section>
 
         <Section title="Financials">
-          <dl className="space-y-1">
-            <Row label="Proposed monthly cost impact" value={costImpactLabel} large />
-            <Row label="Monthly cost amount / range" value={costAmount} />
-            <Row
-              label="Monthly usage — old / new"
-              value={
-                initial.annualUsageOld || initial.annualUsageNew
-                  ? `${initial.annualUsageOld || "—"} / ${initial.annualUsageNew || "—"}`
-                  : null
-              }
-            />
-            <Row label="Replacing" value={initial.replacingItems} />
-            <Row label="Expected ROI" value={initial.expectedRoi} />
-          </dl>
+          <Row label="Monthly cost impact:" value={costImpactLine || null} />
+          <Row label="Monthly usage old/new:" value={usageLine} />
+          <Row label="Replacing:" value={initial.replacingItems} />
+          <Row label="Expected ROI:" value={initial.expectedRoi} />
         </Section>
-      </div>
 
-      {/* Recommendation */}
-      <section
-        className="mt-12 pt-8 border-t-4"
-        style={{ borderColor: GREEN.primary }}
-      >
-        <h2
-          className="text-sm font-bold uppercase tracking-[0.12em] mb-4"
-          style={{ color: GREEN.primary }}
-        >
-          Recommendation
-        </h2>
-        <div className="flex flex-wrap gap-3 md:gap-4">
-          {RECS.map(({ value, label }) => {
-            const active = rec === value;
-            const colors =
-              value === "APPROVE"
-                ? { border: GREEN.primary, bg: GREEN.soft, text: GREEN.dark }
-                : value === "DENY"
-                  ? { border: "#B91C1C", bg: "#FEF2F2", text: "#991B1B" }
-                  : value === "TRIAL"
-                    ? { border: "#1D4ED8", bg: "#EFF6FF", text: "#1E3A8A" }
-                    : { border: "#B45309", bg: "#FFFBEB", text: "#92400E" };
-            return (
-              <button
-                key={value}
-                type="button"
-                disabled={saving}
-                onClick={() => saveRec(value)}
-                className="min-w-[130px] rounded-lg border-2 px-5 py-3.5 text-lg font-bold transition-all"
-                style={
-                  active
-                    ? {
-                        borderColor: colors.border,
-                        backgroundColor: colors.bg,
-                        color: colors.text,
-                      }
-                    : {
-                        borderColor: "#94A3B8",
-                        backgroundColor: "#fff",
-                        color: "#0F172A",
-                      }
+        {/* Recommendation */}
+        <section className="mt-5">
+          <h2 className="text-[13px] font-bold uppercase tracking-wide text-black border-b border-black pb-1 mb-3">
+            Recommendation
+          </h2>
+          <div className="flex flex-wrap gap-x-8 gap-y-2 text-[15px] text-black">
+            {RECS.map(({ value, label }) => {
+              const active = rec === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  disabled={saving}
+                  onClick={() => saveRec(value)}
+                  className="inline-flex items-center gap-2 font-medium hover:opacity-80"
+                >
+                  <span
+                    className={cn(
+                      "inline-flex h-[1.1rem] w-[1.1rem] items-center justify-center border border-black text-[11px] leading-none",
+                      active && "bg-black text-white"
+                    )}
+                    aria-hidden
+                  >
+                    {active ? "✓" : ""}
+                  </span>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-3 max-w-xl print:hidden">
+            <label className="text-[13px] font-bold text-black">Notes</label>
+            <textarea
+              className="mt-1 w-full rounded border border-black/40 px-2 py-1.5 text-[15px] text-black"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              onBlur={() => {
+                if (notes !== (initial.recommendationNotes || "")) {
+                  saveRec(rec);
                 }
-              >
-                <span
-                  className="inline-block w-4 h-4 mr-2 rounded border-2 align-middle"
-                  style={{
-                    borderColor: active ? colors.border : "#64748B",
-                    backgroundColor: active ? colors.border : "transparent",
-                  }}
-                />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-5 max-w-2xl">
-          <label
-            className="text-xs font-bold uppercase tracking-wide"
-            style={{ color: GREEN.dark }}
-          >
-            Notes
-          </label>
-          <textarea
-            className="mt-1 w-full rounded-md border-2 border-slate-300 px-3 py-2.5 text-base text-slate-900 font-medium"
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={() => {
-              if (notes !== (initial.recommendationNotes || "")) {
-                saveRec(rec);
-              }
-            }}
-            placeholder="Optional meeting notes…"
-          />
-        </div>
-      </section>
+              }}
+              placeholder="Optional meeting notes…"
+            />
+          </div>
+        </section>
+      </article>
     </div>
   );
 }

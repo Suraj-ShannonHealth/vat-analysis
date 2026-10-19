@@ -36,8 +36,8 @@ export default function AdminLoginPage() {
         const body = await res.json();
         throw new Error(body.error || "Login failed");
       }
-      router.push("/admin");
-      router.refresh();
+      // Full navigation so the session cookie is included on the next request
+      window.location.href = "/admin";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <Link href="/" className="text-sm text-muted-foreground hover:underline">
+            <Link href="/" className="text-sm text-foreground/80 hover:underline">
               ← Back to form
             </Link>
           </div>

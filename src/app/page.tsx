@@ -65,7 +65,7 @@ export default function HomePage() {
         </Card>
       </main>
 
-      <footer className="border-t py-6 text-center text-sm text-muted-foreground">
+      <footer className="border-t py-6 text-center text-sm text-foreground/80">
         VAT Approval System
       </footer>
     </div>

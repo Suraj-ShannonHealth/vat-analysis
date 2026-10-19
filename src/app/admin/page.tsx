@@ -41,7 +41,7 @@ export default async function AdminDashboard({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Submissions</h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-foreground/80 text-sm">
             {showArchived ? "Archived requests" : "Active requests"}
           </p>
         </div>
@@ -56,7 +56,7 @@ export default async function AdminDashboard({
           ) : (
             <Link
               href="/admin?archived=1"
-              className="text-sm text-muted-foreground hover:underline"
+              className="text-sm text-foreground/80 hover:underline"
             >
               View archived
             </Link>
@@ -66,7 +66,7 @@ export default async function AdminDashboard({
 
       {submissions.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="py-12 text-center text-foreground/80">
             No submissions yet.
           </CardContent>
         </Card>
@@ -103,7 +103,7 @@ export default async function AdminDashboard({
                 </div>
               </CardHeader>
               <CardContent className="pt-0 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
+                <span className="text-foreground/80">
                   {new Date(s.createdAt).toLocaleDateString()} · {s.files.length}{" "}
                   file(s)
                 </span>

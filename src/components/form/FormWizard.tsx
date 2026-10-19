@@ -29,6 +29,15 @@ import { ChevronLeft, ChevronRight, Upload, X, Loader2 } from "lucide-react";
 
 type StepForm = UseFormReturn<FieldValues>;
 
+/** Browser-safe id — crypto.randomUUID() is missing on non-HTTPS (non-localhost) origins */
+function newId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+
 const STEPS = [
   { id: 1, title: "Requestor & Item Information", schema: step1Schema },
   { id: 2, title: "Product Classification", schema: step2Schema },
@@ -62,13 +71,6 @@ export default function FormWizard() {
     defaultValues: data as FieldValues,
     mode: "onChange",
   });
-
-  function newId(): string {
-    if(typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"){
-      return crypto.randomUUID();
-    }
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-  }
 
   const onNext = async () => {
     const valid = await form.trigger();
@@ -434,6 +436,14 @@ function Step1Fields({ form }: { form: StepForm }) {
       </div>
 
       <div>
+        <Label htmlFor="oracleDepartmentNumber">
+          Oracle Department Number *
+        </Label>
+        <Input id="oracleDepartmentNumber" {...register("oracleDepartmentNumber")} className="mt-1" />
+        <FieldError error={errors.oracleDepartmentNumber} />
+      </div>
+
+      <div>
         <Label>7. Is the request for a new provider/service? *</Label>
         <div className="flex gap-4 mt-2">
           {["Yes", "No"].map((opt) => (
@@ -632,7 +642,7 @@ function Step3Fields({ form }: { form: StepForm }) {
           {...register("reasonsForRequest")}
           className="mt-1"
           rows={4}
-          placeholder={"Please provide the reasons for your request"}
+          placeholder={"• Reason one\\n• Reason two\\n• Reason three"}
         />
         <FieldError error={errors.reasonsForRequest} />
       </div>
@@ -730,37 +740,56 @@ function Step5Fields({ form }: { form: StepForm }) {
   return (
     <div className="space-y-5">
       <div>
+        <Label>Proposed monthly cost impact *</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+          {(["Increase", "Decrease", "No change"] as const).map((opt) => (
+            <label
+              key={opt}
+              className="flex items-center gap-2 cursor-pointer rounded-md border border-input px-3 py-2.5 text-sm hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+            >
+              <input type="radio" value={opt} {...register("costImpact")} />
+              {opt}
+            </label>
+          ))}
+        </div>
+        <FieldError error={errors.costImpact} />
+      </div>
+
+      <div>
         <Label htmlFor="proposedAnnualCostImpact">
-          Proposed annual cost increase (savings) *
+          Monthly cost amount or range (if applicable)
         </Label>
         <Input
           id="proposedAnnualCostImpact"
           {...register("proposedAnnualCostImpact")}
           className="mt-1"
-          placeholder="e.g. $9,500 savings or $12,000 increase"
         />
-        <FieldError error={errors.proposedAnnualCostImpact} />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="annualUsageOld">Annual usage — old product</Label>
-          <Input id="annualUsageOld" {...register("annualUsageOld")} className="mt-1" placeholder="e.g. 100 a year" />
+          <Label htmlFor="annualUsageOld">Monthly usage — old product *</Label>
+          <Input id="annualUsageOld" {...register("annualUsageOld")} className="mt-1" />
+          <FieldError error={errors.annualUsageOld} />
         </div>
         <div>
-          <Label htmlFor="annualUsageNew">Annual usage — new product</Label>
-          <Input id="annualUsageNew" {...register("annualUsageNew")} className="mt-1" placeholder="e.g. 50 a year" />
+          <Label htmlFor="annualUsageNew">Monthly usage — new product *</Label>
+          <Input id="annualUsageNew" {...register("annualUsageNew")} className="mt-1" />
+          <FieldError error={errors.annualUsageNew} />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="replacingItems">Replacing — list items that will be replaced</Label>
+        <Label htmlFor="replacingItems">
+          Replacing — list items that will be replaced *
+        </Label>
         <Textarea id="replacingItems" {...register("replacingItems")} className="mt-1" rows={3} />
+        <FieldError error={errors.replacingItems} />
       </div>
 
       <div>
         <Label htmlFor="expectedRoi">
-          Expected Return on Investment (e.g. reduced hospital stays, fewer complications) *
+          Expected Return on Investment *
         </Label>
         <Textarea id="expectedRoi" {...register("expectedRoi")} className="mt-1" rows={3} />
         <FieldError error={errors.expectedRoi} />

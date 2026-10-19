@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
         requesterEmail: data.requesterEmail,
         requesterPhone: data.requesterPhone,
         requestingDepartment: data.requestingDepartment,
+        oracleDepartmentNumber: data.oracleDepartmentNumber,
         isNewProviderService: data.isNewProviderService,
         productServiceName: data.productServiceName,
         vendorManufacturer: data.vendorManufacturer,
@@ -61,7 +62,8 @@ export async function POST(req: NextRequest) {
         specialHandling: data.specialHandling || null,
         usedWithOtherProduct: data.usedWithOtherProduct || null,
         // Step 5 financials
-        proposedAnnualCostImpact: data.proposedAnnualCostImpact,
+        costImpact: data.costImpact,
+        proposedAnnualCostImpact: data.proposedAnnualCostImpact || "",
         annualUsageOld: data.annualUsageOld || null,
         annualUsageNew: data.annualUsageNew || null,
         replacingItems: data.replacingItems || null,

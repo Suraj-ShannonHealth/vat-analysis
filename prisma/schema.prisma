@@ -36,6 +36,7 @@ model Submission {
   requesterEmail         String
   requesterPhone         String
   requestingDepartment   String
+  oracleDepartmentNumber String    @default("")
   isNewProviderService   String
   productServiceName     String
   vendorManufacturer     String
@@ -62,9 +63,10 @@ model Submission {
   departmentsImpacted    String?   // Department(s) beyond requesting
   providersImpacted      String?   // Provider(s) / doctors impacted
   reasonsForRequest      String    @default("") // bullet-style reasons
-  proposedAnnualCostImpact String  @default("") // e.g. $9,500 savings or increase
-  annualUsageOld         String?   // Annual usage old product
-  annualUsageNew         String?   // Annual usage new product
+  costImpact             String    @default("") // Increase | Decrease | No change
+  proposedAnnualCostImpact String  @default("") // optional monthly $ amount / range
+  annualUsageOld         String?   // Monthly usage — old product
+  annualUsageNew         String?   // Monthly usage — new product
   replacingItems         String?   // List items that will be replaced
 
   // ── Step 4 – Specific Product & Usage (slimmed) ──

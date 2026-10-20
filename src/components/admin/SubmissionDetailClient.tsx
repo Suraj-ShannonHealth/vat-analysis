@@ -30,6 +30,7 @@ import {
   CheckCircle2,
   Presentation,
   FileSpreadsheet,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -437,6 +438,45 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
 
   const quotes = initial.files.filter((f) => f.field === "quote");
   const payor = initial.files.filter((f) => f.field === "payorMix");
+  const additional = initial.files.filter((f) => f.field === "additional");
+
+  const [docName, setDocName] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+  const uploadAdditional = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    const file = fileList[0];
+    const name = docName.trim();
+    if (!name) {
+      setUploadError("Enter a document name before uploading.");
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+    try {
+      const fd = new FormData();
+      fd.append("submissionId", initial.id);
+      fd.append("documentName", name);
+      fd.append("file", file);
+      const res = await fetch("/api/admin/submissions/files", {
+        method: "POST",
+        body: fd,
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || "Upload failed");
+      setDocName("");
+      setUploadSuccess(`Uploaded “${body.file?.originalName || name}”`);
+      router.refresh();
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -594,7 +634,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                     Current Product
                   </h3>
                   <EditableField label="Catalog #" name="currentCatNumber" value={form.currentCatNumber} onChange={onChange} placeholder="N/A if new" />
-                  <EditableField label="Oracle Item number #" name="currentLawNumber" value={form.currentLawNumber} onChange={onChange} />
+                  <EditableField label="Lawson #" name="currentLawNumber" value={form.currentLawNumber} onChange={onChange} />
                   <EditableField label="Vendor" name="currentVendor" value={form.currentVendor} onChange={onChange} placeholder="N/A if new" />
                   <EditableField label="Contract" name="currentContract" value={form.currentContract} onChange={onChange} />
                   <div className="grid grid-cols-2 gap-3">
@@ -618,7 +658,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                     Proposed Product
                   </h3>
                   <EditableField label="Catalog #" name="proposedCatNumber" value={form.proposedCatNumber} onChange={onChange} />
-                  <EditableField label="Oracle Item number #" name="proposedLawNumber" value={form.proposedLawNumber} onChange={onChange} />
+                  <EditableField label="Lawson #" name="proposedLawNumber" value={form.proposedLawNumber} onChange={onChange} />
                   <EditableField label="Vendor" name="proposedVendor" value={form.proposedVendor} onChange={onChange} />
                   <EditableField label="Contract" name="proposedContract" value={form.proposedContract} onChange={onChange} />
                   <div className="grid grid-cols-2 gap-3">
@@ -819,7 +859,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Section E — Material Management / Inventory Setup</CardTitle>
-            <CardDescription>Post-approval item setup in Oracle / inventory system</CardDescription>
+            <CardDescription>Post-approval item setup in Lawson / inventory system</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
@@ -889,18 +929,21 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               <FileText className="h-4 w-4" />
               Attached Files
             </CardTitle>
+            <CardDescription>
+              Quotes from the requestor plus documents added by admin
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {quotes.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Quotes (mandatory)</p>
+                <p className="text-sm font-semibold mb-2">Quotes (mandatory)</p>
                 <ul className="space-y-1">
                   {quotes.map((f) => (
                     <li key={f.id}>
                       <a
                         href={`/${f.path}`}
                         download={f.originalName}
-                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5"
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
                       >
                         <Download className="h-3.5 w-3.5" />
                         {f.originalName}{" "}
@@ -915,14 +958,14 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
             )}
             {payor.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Payor Mix / Reimbursement</p>
+                <p className="text-sm font-semibold mb-2">Payor Mix / Reimbursement</p>
                 <ul className="space-y-1">
                   {payor.map((f) => (
                     <li key={f.id}>
                       <a
                         href={`/${f.path}`}
                         download={f.originalName}
-                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5"
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
                       >
                         <Download className="h-3.5 w-3.5" />
                         {f.originalName}{" "}
@@ -935,8 +978,88 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                 </ul>
               </div>
             )}
-            {quotes.length === 0 && payor.length === 0 && (
-              <p className="text-sm text-foreground/80">No files attached.</p>
+
+            <div className="border-t pt-4 space-y-3">
+              <p className="text-sm font-semibold">Additional documents</p>
+              {additional.length > 0 ? (
+                <ul className="space-y-1.5">
+                  {additional.map((f) => (
+                    <li key={f.id}>
+                      <a
+                        href={`/${f.path}`}
+                        download={f.originalName}
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {f.originalName}{" "}
+                        <span className="text-foreground/80">
+                          ({(f.size / 1024).toFixed(1)} KB)
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-foreground/80">No additional documents yet.</p>
+              )}
+
+              <div className="rounded-md border bg-secondary/30 p-4 space-y-3 max-w-lg">
+                <p className="text-sm font-semibold text-foreground">Upload additional document</p>
+                <div className="space-y-1.5">
+                  <Label htmlFor="additional-doc-name" className="text-xs font-semibold">
+                    Document name *
+                  </Label>
+                  <Input
+                    id="additional-doc-name"
+                    value={docName}
+                    onChange={(e) => {
+                      setDocName(e.target.value);
+                      setUploadError(null);
+                      setUploadSuccess(null);
+                    }}
+                    placeholder="e.g. Feedback document, Evaluation form etc"
+                    className="text-sm h-9"
+                    disabled={uploading}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label
+                    className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-accent ${
+                      uploading || !docName.trim() ? "opacity-50 pointer-events-none" : ""
+                    }`}
+                  >
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                      disabled={uploading || !docName.trim()}
+                      onChange={(e) => {
+                        void uploadAdditional(e.target.files);
+                        e.target.value = "";
+                      }}
+                    />
+                    {uploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    {uploading ? "Uploading…" : "Choose file & upload"}
+                  </label>
+                </div>
+                <p className="text-xs text-foreground/80">
+                  Allowed: PDF, Word (.doc/.docx), Excel (.xls/.xlsx). Max 25MB. Enter a name first, then select the file.
+                </p>
+                {uploadError && (
+                  <p className="text-sm font-medium text-destructive">{uploadError}</p>
+                )}
+                {uploadSuccess && (
+                  <p className="text-sm font-medium text-primary">{uploadSuccess}</p>
+                )}
+              </div>
+            </div>
+
+            {quotes.length === 0 && payor.length === 0 && additional.length === 0 && (
+              <p className="text-sm text-foreground/80">No files attached yet.</p>
             )}
           </CardContent>
         </Card>

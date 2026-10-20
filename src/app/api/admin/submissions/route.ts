@@ -20,6 +20,18 @@ export async function PATCH(req: NextRequest) {
       "status", "archived",
       "requestNumber", "assignedEmployee", "dateReceived",
       "recommendation", "recommendationNotes",
+      // Request Details (editable by admin)
+      "typeOfRequest", "requestedBy", "requestedByNameTitle", "requesterEmail",
+      "requesterPhone", "requestingDepartment", "oracleDepartmentNumber",
+      "isNewProviderService", "productServiceName", "vendorManufacturer",
+      "catalogNumber", "manufacturerRep", "productType",
+      "productClassification", "isMinorEquipment", "capitalEquipmentInfo",
+      "governingBody", "multiDepartmentUsage", "anticipatedMonthlyUsage",
+      "specialHandling", "usedWithOtherProduct",
+      "costImpact", "proposedAnnualCostImpact", "annualUsageOld", "annualUsageNew",
+      "presenters", "teamLeads", "purpose", "procedures", "usedWith",
+      "departmentsImpacted", "providersImpacted", "reasonsForRequest",
+      "currentProcedures", "clinicalMetrics", "expectedRoi", "replacingItems",
       // Section B
       "currentCatNumber", "currentLawNumber", "currentVendor", "currentContract",
       "currentPricing", "currentUom", "currentPkg", "currentEachPricing",
@@ -48,6 +60,30 @@ export async function PATCH(req: NextRequest) {
         const val = rest[key];
         data[key] = val === "" ? null : val;
       }
+    }
+
+    // Prevent clearing required request-detail fields
+    const requiredRequestFields = [
+      "typeOfRequest", "requestedBy", "requestedByNameTitle", "requesterEmail",
+      "requesterPhone", "requestingDepartment", "oracleDepartmentNumber",
+      "isNewProviderService", "productServiceName", "vendorManufacturer",
+      "catalogNumber", "manufacturerRep", "productType",
+      "productClassification", "isMinorEquipment", "anticipatedMonthlyUsage",
+      "costImpact", "annualUsageOld", "annualUsageNew",
+      "purpose", "reasonsForRequest", "currentProcedures", "procedures",
+      "clinicalMetrics", "expectedRoi", "replacingItems",
+    ];
+    const cleared = requiredRequestFields.filter(
+      (k) => k in data && (data[k] === null || data[k] === "")
+    );
+    if (cleared.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Required fields cannot be empty: ${cleared.join(", ")}`,
+          fields: cleared,
+        },
+        { status: 400 }
+      );
     }
 
     const updated = await prisma.submission.update({

@@ -73,14 +73,14 @@ ADMIN_PASSWORD="admin123"
 
 When an admin opens a submission they see tabbed sections:
 
-| Tab | Purpose |
-|-----|---------|
-| **Summary** | Snapshot + clinical justification + supply-chain meta (request #, assignee) |
-| **Request Details** | Full form answers from the requestor |
+| Tab                       | Purpose                                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Summary**         | Snapshot + clinical justification + supply-chain meta (request #, assignee)                        |
+| **Request Details** | Full form answers from the requestor                                                               |
 | **Material Review** | Section B – Current vs Proposed side-by-side comparison, pricing, volume, cost savings, MM action |
-| **VAT Review** | Section C – Committee action, trial/education coordinators |
-| **Evaluation** | Section D – Trial results |
-| **Inventory Setup** | Section E – Lawson / inventory fields after approval |
-| **Files** | Downloadable quotes & payor-mix attachments |
+| **VAT Review**      | Section C – Committee action, trial/education coordinators                                        |
+| **Evaluation**      | Section D – Trial results                                                                         |
+| **Inventory Setup** | Section E – Oracle Item Number (OIN) / inventory fields after approval                           |
+| **Files**           | Downloadable quotes & payor-mix attachments                                                        |
 
 All review fields are editable and saved with the **Save review** button. Proposed product fields are pre-filled from the original submission.

@@ -30,6 +30,7 @@ import {
   CheckCircle2,
   Presentation,
   FileSpreadsheet,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -186,6 +187,8 @@ function EditableField({
   type = "text",
   placeholder,
   rows,
+  required,
+  invalid,
 }: {
   label: string;
   name: string;
@@ -194,11 +197,15 @@ function EditableField({
   type?: string;
   placeholder?: string;
   rows?: number;
+  required?: boolean;
+  invalid?: boolean;
 }) {
+  const border = invalid ? "border-destructive focus-visible:ring-destructive" : "";
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={name} className="text-xs text-foreground/80">
+      <Label htmlFor={name} className="text-xs text-foreground font-semibold">
         {label}
+        {required ? " *" : ""}
       </Label>
       {rows ? (
         <Textarea
@@ -207,7 +214,8 @@ function EditableField({
           onChange={(e) => onChange(name, e.target.value)}
           placeholder={placeholder}
           rows={rows}
-          className="text-sm"
+          className={`text-sm ${border}`}
+          aria-invalid={invalid || undefined}
         />
       ) : (
         <Input
@@ -216,8 +224,12 @@ function EditableField({
           value={value}
           onChange={(e) => onChange(name, e.target.value)}
           placeholder={placeholder}
-          className="text-sm h-9"
+          className={`text-sm h-9 ${border}`}
+          aria-invalid={invalid || undefined}
         />
+      )}
+      {invalid && (
+        <p className="text-xs text-destructive font-medium">This field is required</p>
       )}
     </div>
   );
@@ -229,6 +241,44 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
   const [form, setForm] = useState<Record<string, string>>(() => {
     const s = initial;
     return {
+      // Request details (admin-editable)
+      typeOfRequest: s.typeOfRequest || "",
+      requestedBy: s.requestedBy || "",
+      requestedByNameTitle: s.requestedByNameTitle || "",
+      requesterEmail: s.requesterEmail || "",
+      requesterPhone: s.requesterPhone || "",
+      requestingDepartment: s.requestingDepartment || "",
+      oracleDepartmentNumber: s.oracleDepartmentNumber || "",
+      isNewProviderService: s.isNewProviderService || "",
+      productServiceName: s.productServiceName || "",
+      vendorManufacturer: s.vendorManufacturer || "",
+      catalogNumber: s.catalogNumber || "",
+      manufacturerRep: s.manufacturerRep || "",
+      productType: s.productType || "",
+      productClassification: s.productClassification || "",
+      isMinorEquipment: s.isMinorEquipment || "",
+      capitalEquipmentInfo: s.capitalEquipmentInfo || "",
+      governingBody: s.governingBody || "",
+      multiDepartmentUsage: s.multiDepartmentUsage || "",
+      anticipatedMonthlyUsage: s.anticipatedMonthlyUsage || "",
+      specialHandling: s.specialHandling || "",
+      usedWithOtherProduct: s.usedWithOtherProduct || "",
+      costImpact: s.costImpact || "",
+      proposedAnnualCostImpact: s.proposedAnnualCostImpact || "",
+      annualUsageOld: s.annualUsageOld || "",
+      annualUsageNew: s.annualUsageNew || "",
+      presenters: s.presenters || "",
+      teamLeads: s.teamLeads || "",
+      purpose: s.purpose || "",
+      procedures: s.procedures || "",
+      usedWith: s.usedWith || "",
+      departmentsImpacted: s.departmentsImpacted || "",
+      providersImpacted: s.providersImpacted || "",
+      reasonsForRequest: s.reasonsForRequest || "",
+      currentProcedures: s.currentProcedures || "",
+      clinicalMetrics: s.clinicalMetrics || "",
+      expectedRoi: s.expectedRoi || "",
+      replacingItems: s.replacingItems || "",
       requestNumber: s.requestNumber || "",
       assignedEmployee: s.assignedEmployee || "",
       dateReceived: s.dateReceived ? s.dateReceived.slice(0, 10) : "",
@@ -291,13 +341,80 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  /** Required request-detail fields — admin cannot clear these on save */
+  const REQUIRED_REQUEST_FIELDS: { key: string; label: string }[] = [
+    { key: "typeOfRequest", label: "Type of Request" },
+    { key: "requestedBy", label: "Requested By" },
+    { key: "requestedByNameTitle", label: "Name & Title" },
+    { key: "requesterEmail", label: "Email" },
+    { key: "requesterPhone", label: "Phone" },
+    { key: "requestingDepartment", label: "Department" },
+    { key: "oracleDepartmentNumber", label: "Oracle Department Number" },
+    { key: "isNewProviderService", label: "New provider/service?" },
+    { key: "productServiceName", label: "Product/Service" },
+    { key: "vendorManufacturer", label: "Vendor/Manufacturer" },
+    { key: "catalogNumber", label: "Catalog #" },
+    { key: "manufacturerRep", label: "Rep (Name & Phone)" },
+    { key: "productType", label: "Product Type" },
+    { key: "productClassification", label: "Classification" },
+    { key: "isMinorEquipment", label: "Minor equipment?" },
+    { key: "anticipatedMonthlyUsage", label: "Anticipated monthly usage" },
+    { key: "costImpact", label: "Monthly cost impact" },
+    { key: "annualUsageOld", label: "Monthly usage — old" },
+    { key: "annualUsageNew", label: "Monthly usage — new" },
+    { key: "purpose", label: "Purpose" },
+    { key: "reasonsForRequest", label: "Reasons for request" },
+    { key: "currentProcedures", label: "Current procedures" },
+    { key: "procedures", label: "Procedure(s)" },
+    { key: "clinicalMetrics", label: "Clinical metrics" },
+    { key: "expectedRoi", label: "Expected ROI" },
+    { key: "replacingItems", label: "Replacing" },
+  ];
 
   const onChange = (name: string, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }));
     setSaved(false);
+    setSaveError(null);
+    if (fieldErrors[name] && value.trim()) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+  };
+
+  const validateRequestFields = (): string[] => {
+    const missing: string[] = [];
+    const errors: Record<string, boolean> = {};
+    for (const { key, label } of REQUIRED_REQUEST_FIELDS) {
+      const val = (form[key] ?? "").trim();
+      if (!val) {
+        missing.push(label);
+        errors[key] = true;
+      }
+    }
+    setFieldErrors(errors);
+    return missing;
   };
 
   const save = async () => {
+    setSaveError(null);
+    const missing = validateRequestFields();
+    if (missing.length > 0) {
+      setSaveError(
+        `Cannot save — ${missing.length} required field(s) empty: ${missing.slice(0, 5).join(", ")}${
+          missing.length > 5 ? ` (+${missing.length - 5} more)` : ""
+        }`
+      );
+      // Prefer showing Request Details if validation failed there
+      setTab("request");
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch("/api/admin/submissions", {
@@ -305,11 +422,15 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: initial.id, ...form }),
       });
-      if (!res.ok) throw new Error("Save failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Save failed");
+      }
       setSaved(true);
+      setFieldErrors({});
       router.refresh();
-    } catch {
-      alert("Failed to save. Please try again.");
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -317,6 +438,45 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
 
   const quotes = initial.files.filter((f) => f.field === "quote");
   const payor = initial.files.filter((f) => f.field === "payorMix");
+  const additional = initial.files.filter((f) => f.field === "additional");
+
+  const [docName, setDocName] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+  const uploadAdditional = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    const file = fileList[0];
+    const name = docName.trim();
+    if (!name) {
+      setUploadError("Enter a document name before uploading.");
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+    try {
+      const fd = new FormData();
+      fd.append("submissionId", initial.id);
+      fd.append("documentName", name);
+      fd.append("file", file);
+      const res = await fetch("/api/admin/submissions/files", {
+        method: "POST",
+        body: fd,
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || "Upload failed");
+      setDocName("");
+      setUploadSuccess(`Uploaded “${body.file?.originalName || name}”`);
+      router.refresh();
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -390,66 +550,66 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
         ))}
       </div>
 
-
       {/* ── REQUEST DETAILS (full form) ── */}
       {tab === "request" && (
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Requestor & Item</CardTitle>
+              <CardDescription>Edit values, then click Save review</CardDescription>
             </CardHeader>
-            <CardContent>
-              <dl>
-                <Field label="Type of Request" value={initial.typeOfRequest} />
-                <Field label="Requested By" value={initial.requestedBy} />
-                <Field label="Name & Title" value={initial.requestedByNameTitle} />
-                <Field label="Email" value={initial.requesterEmail} />
-                <Field label="Phone" value={initial.requesterPhone} />
-                <Field label="Department" value={initial.requestingDepartment} />
-              <Field label="Oracle Department Number" value={initial.oracleDepartmentNumber} />
-                <Field label="New provider/service?" value={initial.isNewProviderService} />
-                <Field label="Product/Service" value={initial.productServiceName} />
-                <Field label="Vendor/Manufacturer" value={initial.vendorManufacturer} />
-                <Field label="Catalog #" value={initial.catalogNumber} />
-                <Field label="Rep (Name & Phone)" value={initial.manufacturerRep} />
-                <Field label="Product Type" value={initial.productType} />
-              </dl>
+            <CardContent className="space-y-3">
+              <EditableField label="Type of Request" name="typeOfRequest" value={form.typeOfRequest} onChange={onChange} required invalid={!!fieldErrors.typeOfRequest} />
+              <EditableField label="Requested By" name="requestedBy" value={form.requestedBy} onChange={onChange} required invalid={!!fieldErrors.requestedBy} />
+              <EditableField label="Name & Title" name="requestedByNameTitle" value={form.requestedByNameTitle} onChange={onChange} required invalid={!!fieldErrors.requestedByNameTitle} />
+              <EditableField label="Email" name="requesterEmail" value={form.requesterEmail} onChange={onChange} required invalid={!!fieldErrors.requesterEmail} />
+              <EditableField label="Phone" name="requesterPhone" value={form.requesterPhone} onChange={onChange} required invalid={!!fieldErrors.requesterPhone} />
+              <EditableField label="Department" name="requestingDepartment" value={form.requestingDepartment} onChange={onChange} required invalid={!!fieldErrors.requestingDepartment} />
+              <EditableField label="Oracle Department Number" name="oracleDepartmentNumber" value={form.oracleDepartmentNumber} onChange={onChange} required invalid={!!fieldErrors.oracleDepartmentNumber} />
+              <EditableField label="New provider/service?" name="isNewProviderService" value={form.isNewProviderService} onChange={onChange} required invalid={!!fieldErrors.isNewProviderService} />
+              <EditableField label="Product/Service" name="productServiceName" value={form.productServiceName} onChange={onChange} required invalid={!!fieldErrors.productServiceName} />
+              <EditableField label="Vendor/Manufacturer" name="vendorManufacturer" value={form.vendorManufacturer} onChange={onChange} required invalid={!!fieldErrors.vendorManufacturer} />
+              <EditableField label="Catalog #" name="catalogNumber" value={form.catalogNumber} onChange={onChange} required invalid={!!fieldErrors.catalogNumber} />
+              <EditableField label="Rep (Name & Phone)" name="manufacturerRep" value={form.manufacturerRep} onChange={onChange} required invalid={!!fieldErrors.manufacturerRep} />
+              <EditableField label="Product Type" name="productType" value={form.productType} onChange={onChange} required invalid={!!fieldErrors.productType} rows={2} />
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Classification & Usage</CardTitle>
             </CardHeader>
-            <CardContent>
-              <dl>
-                <Field label="Classification" value={initial.productClassification} />
-                <Field label="Minor equipment?" value={initial.isMinorEquipment} />
-                <Field label="Capital Equipment" value={initial.capitalEquipmentInfo} />
-                <Field label="Governing body" value={initial.governingBody} />
-                <Field label="Multi-department usage" value={initial.multiDepartmentUsage} />
-                <Field label="Anticipated monthly usage" value={initial.anticipatedMonthlyUsage} />
-                <Field label="Special handling" value={initial.specialHandling} />
-                <Field label="Used with other product" value={initial.usedWithOtherProduct} />
-                <Field label="Monthly cost impact" value={initial.costImpact} />
-                <Field label="Monthly cost amount / range" value={initial.proposedAnnualCostImpact} />
-                <Field label="Monthly usage — old" value={initial.annualUsageOld} />
-                <Field label="Monthly usage — new" value={initial.annualUsageNew} />
-              </dl>
+            <CardContent className="space-y-3">
+              <EditableField label="Classification" name="productClassification" value={form.productClassification} onChange={onChange} required invalid={!!fieldErrors.productClassification} />
+              <EditableField label="Minor equipment?" name="isMinorEquipment" value={form.isMinorEquipment} onChange={onChange} required invalid={!!fieldErrors.isMinorEquipment} />
+              <EditableField label="Capital Equipment" name="capitalEquipmentInfo" value={form.capitalEquipmentInfo} onChange={onChange} />
+              <EditableField label="Governing body" name="governingBody" value={form.governingBody} onChange={onChange} />
+              <EditableField label="Multi-department usage" name="multiDepartmentUsage" value={form.multiDepartmentUsage} onChange={onChange} />
+              <EditableField label="Anticipated monthly usage" name="anticipatedMonthlyUsage" value={form.anticipatedMonthlyUsage} onChange={onChange} required invalid={!!fieldErrors.anticipatedMonthlyUsage} />
+              <EditableField label="Special handling" name="specialHandling" value={form.specialHandling} onChange={onChange} />
+              <EditableField label="Used with other product" name="usedWithOtherProduct" value={form.usedWithOtherProduct} onChange={onChange} />
+              <EditableField label="Monthly cost impact" name="costImpact" value={form.costImpact} onChange={onChange} required invalid={!!fieldErrors.costImpact} />
+              <EditableField label="Monthly cost amount / range" name="proposedAnnualCostImpact" value={form.proposedAnnualCostImpact} onChange={onChange} />
+              <EditableField label="Monthly usage — old" name="annualUsageOld" value={form.annualUsageOld} onChange={onChange} required invalid={!!fieldErrors.annualUsageOld} />
+              <EditableField label="Monthly usage — new" name="annualUsageNew" value={form.annualUsageNew} onChange={onChange} required invalid={!!fieldErrors.annualUsageNew} />
             </CardContent>
           </Card>
           <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle className="text-base">Operational & Financial Justification</CardTitle>
             </CardHeader>
-            <CardContent className="grid sm:grid-cols-2 gap-x-6">
-              <Field label="Purpose" value={initial.purpose} />
-              <Field label="Reasons for request" value={initial.reasonsForRequest} />
-              <Field label="Used with" value={initial.usedWith} />
-              <Field label="Current procedures" value={initial.currentProcedures} />
-              <Field label="Procedure(s)" value={initial.procedures} />
-              <Field label="Clinical metrics" value={initial.clinicalMetrics} />
-              <Field label="Expected ROI" value={initial.expectedRoi} />
-              <Field label="Replacing" value={initial.replacingItems} />
+            <CardContent className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
+              <EditableField label="Purpose" name="purpose" value={form.purpose} onChange={onChange} required invalid={!!fieldErrors.purpose} rows={3} />
+              <EditableField label="Reasons for request" name="reasonsForRequest" value={form.reasonsForRequest} onChange={onChange} required invalid={!!fieldErrors.reasonsForRequest} rows={3} />
+              <EditableField label="Used with" name="usedWith" value={form.usedWith} onChange={onChange} rows={2} />
+              <EditableField label="Current procedures" name="currentProcedures" value={form.currentProcedures} onChange={onChange} required invalid={!!fieldErrors.currentProcedures} rows={3} />
+              <EditableField label="Procedure(s)" name="procedures" value={form.procedures} onChange={onChange} required invalid={!!fieldErrors.procedures} rows={2} />
+              <EditableField label="Clinical metrics" name="clinicalMetrics" value={form.clinicalMetrics} onChange={onChange} required invalid={!!fieldErrors.clinicalMetrics} rows={2} />
+              <EditableField label="Expected ROI" name="expectedRoi" value={form.expectedRoi} onChange={onChange} required invalid={!!fieldErrors.expectedRoi} rows={2} />
+              <EditableField label="Replacing" name="replacingItems" value={form.replacingItems} onChange={onChange} required invalid={!!fieldErrors.replacingItems} rows={2} />
+              <EditableField label="Presenter(s)" name="presenters" value={form.presenters} onChange={onChange} />
+              <EditableField label="Team Lead(s)" name="teamLeads" value={form.teamLeads} onChange={onChange} />
+              <EditableField label="Department(s) impacted" name="departmentsImpacted" value={form.departmentsImpacted} onChange={onChange} />
+              <EditableField label="Provider(s)" name="providersImpacted" value={form.providersImpacted} onChange={onChange} />
             </CardContent>
           </Card>
         </div>
@@ -769,18 +929,21 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               <FileText className="h-4 w-4" />
               Attached Files
             </CardTitle>
+            <CardDescription>
+              Quotes from the requestor plus documents added by admin
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {quotes.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Quotes (mandatory)</p>
+                <p className="text-sm font-semibold mb-2">Quotes (mandatory)</p>
                 <ul className="space-y-1">
                   {quotes.map((f) => (
                     <li key={f.id}>
                       <a
                         href={`/${f.path}`}
                         download={f.originalName}
-                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5"
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
                       >
                         <Download className="h-3.5 w-3.5" />
                         {f.originalName}{" "}
@@ -795,14 +958,14 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
             )}
             {payor.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Payor Mix / Reimbursement</p>
+                <p className="text-sm font-semibold mb-2">Payor Mix / Reimbursement</p>
                 <ul className="space-y-1">
                   {payor.map((f) => (
                     <li key={f.id}>
                       <a
                         href={`/${f.path}`}
                         download={f.originalName}
-                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5"
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
                       >
                         <Download className="h-3.5 w-3.5" />
                         {f.originalName}{" "}
@@ -815,8 +978,88 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                 </ul>
               </div>
             )}
-            {quotes.length === 0 && payor.length === 0 && (
-              <p className="text-sm text-foreground/80">No files attached.</p>
+
+            <div className="border-t pt-4 space-y-3">
+              <p className="text-sm font-semibold">Additional documents</p>
+              {additional.length > 0 ? (
+                <ul className="space-y-1.5">
+                  {additional.map((f) => (
+                    <li key={f.id}>
+                      <a
+                        href={`/${f.path}`}
+                        download={f.originalName}
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {f.originalName}{" "}
+                        <span className="text-foreground/80">
+                          ({(f.size / 1024).toFixed(1)} KB)
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-foreground/80">No additional documents yet.</p>
+              )}
+
+              <div className="rounded-md border bg-secondary/30 p-4 space-y-3 max-w-lg">
+                <p className="text-sm font-semibold text-foreground">Upload additional document</p>
+                <div className="space-y-1.5">
+                  <Label htmlFor="additional-doc-name" className="text-xs font-semibold">
+                    Document name *
+                  </Label>
+                  <Input
+                    id="additional-doc-name"
+                    value={docName}
+                    onChange={(e) => {
+                      setDocName(e.target.value);
+                      setUploadError(null);
+                      setUploadSuccess(null);
+                    }}
+                    placeholder="e.g. Feedback document, Evaluation form etc"
+                    className="text-sm h-9"
+                    disabled={uploading}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label
+                    className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-accent ${
+                      uploading || !docName.trim() ? "opacity-50 pointer-events-none" : ""
+                    }`}
+                  >
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                      disabled={uploading || !docName.trim()}
+                      onChange={(e) => {
+                        void uploadAdditional(e.target.files);
+                        e.target.value = "";
+                      }}
+                    />
+                    {uploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    {uploading ? "Uploading…" : "Choose file & upload"}
+                  </label>
+                </div>
+                <p className="text-xs text-foreground/80">
+                  Allowed: PDF, Word (.doc/.docx), Excel (.xls/.xlsx). Max 25MB. Enter a name first, then select the file.
+                </p>
+                {uploadError && (
+                  <p className="text-sm font-medium text-destructive">{uploadError}</p>
+                )}
+                {uploadSuccess && (
+                  <p className="text-sm font-medium text-primary">{uploadSuccess}</p>
+                )}
+              </div>
+            </div>
+
+            {quotes.length === 0 && payor.length === 0 && additional.length === 0 && (
+              <p className="text-sm text-foreground/80">No files attached yet.</p>
             )}
           </CardContent>
         </Card>

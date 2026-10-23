@@ -530,6 +530,15 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
           {saving ? "Saving…" : saved ? "Saved" : "Save review"}
         </Button>
       </div>
+      {/* Save error message */}
+      {saveError && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+        >
+          {saveError}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto pb-1 border-b">

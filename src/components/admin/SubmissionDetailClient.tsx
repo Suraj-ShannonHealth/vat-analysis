@@ -643,7 +643,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                     Current Product
                   </h3>
                   <EditableField label="Catalog #" name="currentCatNumber" value={form.currentCatNumber} onChange={onChange} placeholder="N/A if new" />
-                  <EditableField label="Lawson #" name="currentLawNumber" value={form.currentLawNumber} onChange={onChange} />
+                  <EditableField label="Oracle Item Number #" name="currentLawNumber" value={form.currentLawNumber} onChange={onChange} />
                   <EditableField label="Vendor" name="currentVendor" value={form.currentVendor} onChange={onChange} placeholder="N/A if new" />
                   <EditableField label="Contract" name="currentContract" value={form.currentContract} onChange={onChange} />
                   <div className="grid grid-cols-2 gap-3">
@@ -667,7 +667,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                     Proposed Product
                   </h3>
                   <EditableField label="Catalog #" name="proposedCatNumber" value={form.proposedCatNumber} onChange={onChange} />
-                  <EditableField label="Lawson #" name="proposedLawNumber" value={form.proposedLawNumber} onChange={onChange} />
+                  <EditableField label="Oracle Item Number #" name="proposedLawNumber" value={form.proposedLawNumber} onChange={onChange} />
                   <EditableField label="Vendor" name="proposedVendor" value={form.proposedVendor} onChange={onChange} />
                   <EditableField label="Contract" name="proposedContract" value={form.proposedContract} onChange={onChange} />
                   <div className="grid grid-cols-2 gap-3">
@@ -868,7 +868,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Section E — Material Management / Inventory Setup</CardTitle>
-            <CardDescription>Post-approval item setup in Lawson / inventory system</CardDescription>
+            <CardDescription>Post-approval item setup in inventory system</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">

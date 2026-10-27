@@ -55,7 +55,7 @@ Supported statuses:
 | Material Review | Section B — current-versus-proposed product comparison, pricing, volume, cost savings, and materials management actions |
 | VAT Review | Section C — committee decisions, trial coordinators, and education coordinators |
 | Evaluation | Section D — trial results and evaluation findings |
-| Inventory Setup | Section E — post-approval inventory and Lawson/Oracle-style inventory fields |
+| Inventory Setup | Section E — post-approval inventory and Oracle Item number |
 | Files | Downloadable quotes, payor-mix attachments, and additional administrator-uploaded documents |
 
 Review capabilities:

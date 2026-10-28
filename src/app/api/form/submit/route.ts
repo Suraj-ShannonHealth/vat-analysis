@@ -4,6 +4,7 @@ import { fullFormSchema } from "@/lib/validations/form";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import { emailService } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -108,6 +109,23 @@ export async function POST(req: NextRequest) {
 
     await saveFiles(quoteFiles, "quote");
     await saveFiles(payorFiles, "payorMix");
+
+    // Notify admin(s) — never fail the submission if email fails
+    try {
+      await emailService.notifyAdminNewSubmission({
+        submissionId: submission.id,
+        productServiceName: data.productServiceName,
+        typeOfRequest: data.typeOfRequest,
+        requestedByNameTitle: data.requestedByNameTitle,
+        requesterEmail: data.requesterEmail,
+        requesterPhone: data.requesterPhone,
+        requestingDepartment: data.requestingDepartment,
+        vendorManufacturer: data.vendorManufacturer,
+        catalogNumber: data.catalogNumber,
+      });
+    } catch (mailErr) {
+      console.error("Admin notification email error:", mailErr);
+    }
 
     return NextResponse.json({ success: true, id: submission.id });
   } catch (err: unknown) {

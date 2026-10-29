@@ -67,6 +67,12 @@ export default function HomePage() {
 
       <footer className="border-t py-6 text-center text-sm text-foreground/80">
         VAT Approval System
+        <br />
+        {/* small and italic */}
+        <span className="text-xs italic">
+          Made in Shannon with ❤️
+        </span>
+        <br />
       </footer>
     </div>
   );

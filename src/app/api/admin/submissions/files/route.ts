@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         submissionId,
         field: "additional",
         originalName: displayName,
-        path: path.join("files", submissionId, safeName),
+        path: ["files", submissionId, safeName].join("/"),
         mimeType: upload.type || "application/octet-stream",
         size: upload.size,
       },

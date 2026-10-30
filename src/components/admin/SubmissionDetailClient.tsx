@@ -530,15 +530,6 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
           {saving ? "Saving…" : saved ? "Saved" : "Save review"}
         </Button>
       </div>
-      {/* Save error message */}
-      {saveError && (
-        <div
-          role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
-        >
-          {saveError}
-        </div>
-      )}
 
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto pb-1 border-b">
@@ -950,8 +941,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                   {quotes.map((f) => (
                     <li key={f.id}>
                       <a
-                        href={`/${f.path}`}
-                        download={f.originalName}
+                        href={`/api/admin/files/${f.id}`}
                         className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
                       >
                         <Download className="h-3.5 w-3.5" />
@@ -972,8 +962,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                   {payor.map((f) => (
                     <li key={f.id}>
                       <a
-                        href={`/${f.path}`}
-                        download={f.originalName}
+                        href={`/api/admin/files/${f.id}`}
                         className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
                       >
                         <Download className="h-3.5 w-3.5" />
@@ -995,8 +984,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
                   {additional.map((f) => (
                     <li key={f.id}>
                       <a
-                        href={`/${f.path}`}
-                        download={f.originalName}
+                        href={`/api/admin/files/${f.id}`}
                         className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 font-medium"
                       >
                         <Download className="h-3.5 w-3.5" />

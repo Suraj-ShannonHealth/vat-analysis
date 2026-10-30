@@ -32,7 +32,7 @@ export function downloadSubmissionExcel(
     ["Email", s.requesterEmail],
     ["Phone", s.requesterPhone],
     ["Department", s.requestingDepartment],
-    ["Oracle Department Number", s.oracleDepartmentNumber],
+    ["Department Number", s.oracleDepartmentNumber],
     ["New provider/service?", s.isNewProviderService],
     ["Vendor / Manufacturer", s.vendorManufacturer],
     ["Catalog #", s.catalogNumber],

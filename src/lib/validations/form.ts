@@ -17,7 +17,7 @@ export const step1Schema = z.object({
   requesterEmail: z.string().email("Valid email is required"),
   requesterPhone: z.string().min(1, "Phone number is required"),
   requestingDepartment: z.string().min(1, "Department/Unit is required"),
-  oracleDepartmentNumber: z.string().min(1, "Oracle department number is required"),
+  oracleDepartmentNumber: z.string().min(1, "Department number is required"),
   isNewProviderService: z.enum(["Yes", "No"], {
     required_error: "This field is required",
   }),

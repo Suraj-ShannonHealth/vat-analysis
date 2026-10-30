@@ -439,7 +439,7 @@ function Step1Fields({ form }: { form: StepForm }) {
         <Label htmlFor="oracleDepartmentNumber">
           Your Department Number *
         </Label>
-        <Input id="oracleDepartmentNumber" {...register("oracleDepartmentNumber")} className="mt-1" placeholder="5/6 digit number e.g., 80820 for supply chain" />
+        <Input id="oracleDepartmentNumber" {...register("oracleDepartmentNumber")} className="mt-1" placeholder="Example: 80820 for supply chain" />
         <FieldError error={errors.oracleDepartmentNumber} />
       </div>
 

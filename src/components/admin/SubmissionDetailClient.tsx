@@ -578,7 +578,7 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
               <EditableField label="Email" name="requesterEmail" value={form.requesterEmail} onChange={onChange} required invalid={!!fieldErrors.requesterEmail} />
               <EditableField label="Phone" name="requesterPhone" value={form.requesterPhone} onChange={onChange} required invalid={!!fieldErrors.requesterPhone} />
               <EditableField label="Department" name="requestingDepartment" value={form.requestingDepartment} onChange={onChange} required invalid={!!fieldErrors.requestingDepartment} />
-              <EditableField label="Oracle Department Number" name="oracleDepartmentNumber" value={form.oracleDepartmentNumber} onChange={onChange} required invalid={!!fieldErrors.oracleDepartmentNumber} />
+              <EditableField label="Department Number" name="oracleDepartmentNumber" value={form.oracleDepartmentNumber} onChange={onChange} required invalid={!!fieldErrors.oracleDepartmentNumber} />
               <EditableField label="New provider/service?" name="isNewProviderService" value={form.isNewProviderService} onChange={onChange} required invalid={!!fieldErrors.isNewProviderService} />
               <EditableField label="Product/Service" name="productServiceName" value={form.productServiceName} onChange={onChange} required invalid={!!fieldErrors.productServiceName} />
               <EditableField label="Vendor/Manufacturer" name="vendorManufacturer" value={form.vendorManufacturer} onChange={onChange} required invalid={!!fieldErrors.vendorManufacturer} />

@@ -489,7 +489,12 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
           </Button>
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold truncate">{initial.productServiceName}</h1>
+          <h1 className="text-lg font-bold truncate">
+            {initial.requestNumber ? (
+              <span className="text-primary mr-2">{initial.requestNumber}</span>
+            ) : null}
+            {initial.productServiceName}
+          </h1>
           <p className="text-xs text-foreground/80">
             {initial.requestedByNameTitle} · {initial.requestingDepartment} ·{" "}
             {new Date(initial.createdAt).toLocaleDateString()}
@@ -530,7 +535,15 @@ export function SubmissionDetailClient({ submission: initial }: { submission: Ad
           {saving ? "Saving…" : saved ? "Saved" : "Save review"}
         </Button>
       </div>
-
+     {/* Save error message */}
+      {saveError && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+        >
+          {saveError}
+        </div>
+      )}
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto pb-1 border-b">
         {TABS.map(({ id, label, icon: Icon }) => (

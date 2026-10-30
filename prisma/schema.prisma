@@ -172,3 +172,9 @@ model File {
   size         Int
   createdAt    DateTime   @default(now())
 }
+
+// Separate sequences: Medical → 1400, 1401…  Surgical → 1400S, 1401S…
+model RequestIdCounter {
+  id        String @id // "MEDICAL" | "SURGICAL"
+  nextValue Int    @default(1400)
+}

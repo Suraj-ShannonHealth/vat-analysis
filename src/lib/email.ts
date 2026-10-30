@@ -40,6 +40,7 @@ export interface EmailResult {
 
 export interface NewSubmissionNotifyData {
   submissionId: string;
+  requestNumber?: string | null;
   productServiceName: string;
   typeOfRequest: string;
   requestedByNameTitle: string;
@@ -184,6 +185,7 @@ class EmailService {
     const text = [
       "A new VAT product request was submitted.",
       "",
+      data.requestNumber ? `Request #: ${data.requestNumber}` : null,
       `Product: ${data.productServiceName}`,
       `Type: ${data.typeOfRequest}`,
       `Submitted by: ${data.requestedByNameTitle}`,
@@ -213,6 +215,11 @@ class EmailService {
         A new request was submitted and is waiting for review.
       </p>
       <table style="width:100%;border-collapse:collapse;font-size:15px;line-height:1.45;">
+        ${
+          data.requestNumber
+            ? `<tr><td style="padding:8px 0;font-weight:700;width:140px;vertical-align:top;">Request #</td><td style="padding:8px 0;">${escapeHtml(data.requestNumber)}</td></tr>`
+            : ""
+        }
         <tr>
           <td style="padding:8px 0;font-weight:700;width:140px;vertical-align:top;">Product</td>
           <td style="padding:8px 0;">${escapeHtml(data.productServiceName)}</td>

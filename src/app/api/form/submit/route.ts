@@ -5,6 +5,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { emailService } from "@/lib/email";
+import { allocateRequestNumber } from "@/lib/request-id";
 
 export const runtime = "nodejs";
 
@@ -27,8 +28,11 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
+    const requestNumber = await allocateRequestNumber(data.typeOfRequest);
+
     const submission = await prisma.submission.create({
       data: {
+        requestNumber,
         typeOfRequest: data.typeOfRequest,
         requestedBy: data.requestedBy,
         requestedByNameTitle: data.requestedByNameTitle,
@@ -114,6 +118,7 @@ export async function POST(req: NextRequest) {
     try {
       await emailService.notifyAdminNewSubmission({
         submissionId: submission.id,
+        requestNumber,
         productServiceName: data.productServiceName,
         typeOfRequest: data.typeOfRequest,
         requestedByNameTitle: data.requestedByNameTitle,

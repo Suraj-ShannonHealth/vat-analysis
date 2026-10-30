@@ -82,7 +82,7 @@ export default async function AdminDashboard({
                         href={`/admin/submissions/${s.id}`}
                         className="hover:underline"
                       >
-                        {s.productServiceName}
+                        {s.requestNumber ? `${s.requestNumber} · ` : ""}{s.productServiceName}
                       </Link>
                       {" · "}
                       <Link
